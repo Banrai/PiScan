@@ -18,7 +18,6 @@ package scanner
 import (
 	"bytes"
 	"encoding/binary"
-	"flag"
 	"fmt"
 	"os"
 	"syscall"
