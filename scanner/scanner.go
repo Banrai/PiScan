@@ -98,9 +98,9 @@ func lookupKeyCode(b byte) string {
 	}
 }
 
-// Read takes the open scanner device pointer and returns a list of
+// read takes the open scanner device pointer and returns a list of
 // InputEvent captures, corresponding to input (scan) events
-func Read(dev *os.File) ([]InputEvent, error) {
+func read(dev *os.File) ([]InputEvent, error) {
 	events := make([]InputEvent, EVENT_CAPTURES)
 	buffer := make([]byte, EVENT_SIZE*EVENT_CAPTURES)
 	_, err := dev.Read(buffer)
@@ -125,7 +125,7 @@ func Read(dev *os.File) ([]InputEvent, error) {
 // DecodeEvents iterates through the list of InputEvents and decodes
 // the barcode data into a string, along with a boolean to indicate if this
 // particular input sequence is done
-func DecodeEvents(events []InputEvent) (string, bool) {
+func decodeEvents(events []InputEvent) (string, bool) {
 	var buffer bytes.Buffer
 	for i := range events {
 		if events[i].Type == 1 && events[i].Value == 1 {
@@ -157,11 +157,11 @@ func ScanForever(device string, fn func(string)) {
 
 	var scanBuffer bytes.Buffer
 	for {
-		scanEvents, scanErr := Read(scanner)
+		scanEvents, scanErr := read(scanner)
 		if scanErr != nil {
 			fmt.Println(scanErr) // eventually use logger, or a second error-handling fn here instead
 		}
-		scannedData, endOfScan := DecodeEvents(scanEvents)
+		scannedData, endOfScan := decodeEvents(scanEvents)
 		if endOfScan {
 			// invoke the function which handles the scan result
 			fn(scanBuffer.String())
