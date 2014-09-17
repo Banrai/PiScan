@@ -18,7 +18,6 @@ package scanner
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"os"
 	"syscall"
 	"unsafe"
@@ -147,11 +146,12 @@ func decodeEvents(events []InputEvent) (string, bool) {
 
 // ScanForever takes a linux input device string pointing to the scanner
 // to read from, invokes the given function on the resulting barcode string
-// when complete, then goes back to read/scan again
-func ScanForever(device string, fn func(string)) {
+// when complete, or the errfn on error, then goes back to read/scan again
+func ScanForever(device string, fn func(string), errFn func(error)) {
 	scanner, err := os.Open(device)
 	if err != nil {
-		panic(err) // eventually use logger, or a second error-handling fn here instead
+		// invoke the function which handles scanner errors
+		errFn(err)
 	}
 	defer scanner.Close()
 
@@ -159,7 +159,8 @@ func ScanForever(device string, fn func(string)) {
 	for {
 		scanEvents, scanErr := read(scanner)
 		if scanErr != nil {
-			fmt.Println(scanErr) // eventually use logger, or a second error-handling fn here instead
+			// invoke the function which handles scanner errors
+			errFn(scanErr)
 		}
 		scannedData, endOfScan := decodeEvents(scanEvents)
 		if endOfScan {

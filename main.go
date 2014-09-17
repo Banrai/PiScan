@@ -11,6 +11,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/Banrai/PiScan/scanner"
+	"log"
 )
 
 func main() {
@@ -21,5 +22,8 @@ func main() {
 	printFn := func(barcode string) {
 		fmt.Println(fmt.Sprintf("barcode: %s", barcode))
 	}
-	scanner.ScanForever(device, printFn)
+	errorFn := func(e error) {
+		log.Fatal(e)
+	}
+	scanner.ScanForever(device, printFn, errorFn)
 }
