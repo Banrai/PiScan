@@ -61,6 +61,9 @@ CREATE TABLE contributed_brand (
        account_id binary(16) REFERENCES account(id)
 );
 
+CREATE TRIGGER contributed_brand_on_insert BEFORE INSERT ON `contributed_brand`
+    FOR EACH ROW SET NEW.posted = IFNULL(NEW.posted, NOW());
+
 -- `barcode_brand` associates user-contributed barcode information with
 -- the corresponding product brand, when the brand already exists in the
 -- BRAND table of the POD database
