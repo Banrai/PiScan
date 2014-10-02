@@ -18,13 +18,13 @@
 -- contribution is unlikely/unexpected)
 
 CREATE TABLE barcode (
-       id           binary(16) primary key NOT NULL,
-       barcode      varchar(13) NOT NULL,  -- corresponds to GTIN.GTIN_CD
-       product_name varchar(512) NOT NULL,    -- corresponds to GTIN.GTIN_NM
-       product_desc varchar(512),             -- additional description
-       is_edit      boolean DEFAULT false, -- if this represents a correction vs a new addition to GTIN
-       posted       datetime, -- automatically filled in by trigger, below
-       account_id   binary(16) REFERENCES account(id)
+	id           binary(16) primary key NOT NULL,
+	barcode      varchar(13) NOT NULL,     -- corresponds to GTIN.GTIN_CD
+	product_name varchar(512) NOT NULL,    -- corresponds to GTIN.GTIN_NM
+	product_desc varchar(512),             -- additional description (if any, optional)
+	is_edit      boolean DEFAULT false, -- if this represents a correction vs a new addition to GTIN
+	posted       datetime, -- automatically filled in by trigger, below
+	account_id   binary(16) REFERENCES account(id)
 ); 
 
 CREATE TRIGGER barcode_on_insert BEFORE INSERT ON `barcode`
@@ -34,11 +34,11 @@ CREATE TRIGGER barcode_on_insert BEFORE INSERT ON `barcode`
 -- exist in the BRAND table of the POD database
 
 CREATE TABLE contributed_brand (
-       id binary(16) primary key NOT NULL,
-       brand_name varchar(512) NOT NULL, -- corresponds to BRAND.BRAND_NM
-       brand_url varchar(512),      -- corresponds to BRAND.BRAND_LINK
-       posted datetime, -- automatically filled in by trigger, below
-       account_id binary(16) REFERENCES account(id)
+	id         binary(16) primary key NOT NULL,
+	brand_name varchar(512) NOT NULL, -- corresponds to BRAND.BRAND_NM
+	brand_url  varchar(512),          -- corresponds to BRAND.BRAND_LINK
+	posted     datetime, -- automatically filled in by trigger, below
+	account_id binary(16) REFERENCES account(id)
 );
 
 CREATE TRIGGER contributed_brand_on_insert BEFORE INSERT ON `contributed_brand`
@@ -49,8 +49,8 @@ CREATE TRIGGER contributed_brand_on_insert BEFORE INSERT ON `contributed_brand`
 -- BRAND table of the POD database
 
 CREATE TABLE barcode_brand (
-       id         binary(16) primary key NOT NULL,
-       bsin       varchar(6) NOT NULL, -- corresponds to BRAND.BSIN
-       barcode_id binary(16) REFERENCES barcode(id)
+	id         binary(16) primary key NOT NULL,
+	bsin       varchar(6) NOT NULL, -- corresponds to BRAND.BSIN
+	barcode_id binary(16) REFERENCES barcode(id)
 );
 
