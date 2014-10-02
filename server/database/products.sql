@@ -8,26 +8,6 @@
 -- source: http://stackoverflow.com/a/10951183
 
 
--- Contributor management
-
--- `account` defines the person contributing product information
-
-CREATE TABLE account (
-	id            binary(16) primary key NOT NULL,
-	account_type  integer references account_type(code),
-	email         varchar(512) NOT NULL,
-	date_joined   datetime, -- automatically filled in by trigger, below
-	verify_code   varchar(32),
-	verified      boolean DEFAULT false,
-	date_verified datetime,
-	enabled       boolean DEFAULT false,
-	UNIQUE(email, id)
-);
-
-CREATE TRIGGER account_on_insert BEFORE INSERT ON `account`
-    FOR EACH ROW SET NEW.date_joined = IFNULL(NEW.date_joined, NOW());
-
-
 -- Product information
 
 -- `barcode` supplements the GTIN table via user contributions
@@ -74,7 +54,3 @@ CREATE TABLE barcode_brand (
        barcode_id binary(16) REFERENCES barcode(id)
 );
 
-
--- (books are in their own universe)
--- so, later, when find good isbn source, add tables for:
--- BOOK, AUTHOR, BOOK_AUTHORS

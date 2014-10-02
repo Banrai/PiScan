@@ -34,9 +34,12 @@ mysqladmin -u root create product_open_data
 mysql -u root product_open_data < pod_web_2014.01.01_01.sql
 ```
 
-4. Install the [additional tables](tables.sql)
+4. Install the additional tables from this folder
 
    ```sh
 cd $GOPATH/src/github.com/Banrai/PiScan/server/database
-mysql -u root product_open_data < tables.sql
+mysql -u root product_open_data < contributors.sql
+mysql -u root product_open_data < products.sql
+mysql -u root product_open_data < books.sql
+mysql -u root product_open_data < commerce.sql
 ```
