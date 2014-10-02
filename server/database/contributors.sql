@@ -14,7 +14,6 @@
 
 CREATE TABLE account (
 	id            binary(16) primary key NOT NULL,
-	account_type  integer references account_type(code),
 	email         varchar(512) NOT NULL,
 	date_joined   datetime, -- automatically filled in by trigger, below
 	verify_code   varchar(32),
