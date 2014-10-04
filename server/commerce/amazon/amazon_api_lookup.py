@@ -24,7 +24,7 @@ from amazon_settings import ACCESS_KEY, SECRET_KEY, ASSOCIATE, AMZLOCALE
 
 api = API(locale=AMZLOCALE, access_key_id=ACCESS_KEY, secret_access_key=SECRET_KEY, associate_tag=ASSOCIATE)
 
-def lookup (barcode, ID_TYPES=['UPC','EAN']):
+def lookup (barcode, ID_TYPES=['UPC','EAN', 'ISBN']):
     """Lookup the given barcode and return a list of possible matches"""
 
     matches = [] # list of {'desc', 'asin', 'type'}
