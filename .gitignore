@@ -3,3 +3,4 @@
 *.pyc
 .DS_Store
 PiScanner
+amazon_local_settings.py
