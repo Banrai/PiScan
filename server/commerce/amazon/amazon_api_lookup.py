@@ -36,7 +36,20 @@ def lookup (barcode, ID_TYPES=['UPC','EAN']):
                 matches.append({'desc': unicode(item.ItemAttributes.Title),
                                 'asin': unicode(item.ASIN),
                                 'type': idtype})
-        except (errors.InvalidClientTokenId, errors.InvalidParameterValue):
+
+        except (errors.InvalidAccount, errors.InvalidClientTokenId, errors.MissingClientTokenId):
+            print >>sys.stderr, "Amazon Product API lookup: bad account credentials"
+
+        except errors.TooManyRequests, toomanyerr:
+            print >>sys.stderr, "Amazon Product API lookup error:", toomanyerr
+
+        except errors.InternalError, awserr:
+            print >>sys.stderr, "Amazon Product API lookup error:", awserr
+
+        except errors.InvalidParameterValue:
+            # this simply means the barcode
+            # does not exist for the given type,
+            # so no need to do anything explicit
             pass
 
     return matches
