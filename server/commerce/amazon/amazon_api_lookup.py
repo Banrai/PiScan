@@ -24,7 +24,21 @@ from amazon_settings import ACCESS_KEY, SECRET_KEY, ASSOCIATE, AMZLOCALE
 
 api = API(locale=AMZLOCALE, access_key_id=ACCESS_KEY, secret_access_key=SECRET_KEY, associate_tag=ASSOCIATE)
 
-def lookup (barcode, ID_TYPES=['UPC','EAN', 'ISBN']):
+def _is_duplicate (asin, current_list):
+    """Check the current list of match objects and
+    return a boolean if the asin already exists or not"""
+
+    dup = False
+    for m in current_list:
+        try:
+            if unicode(asin) == m['asin']:
+                dup = True
+                break
+        except KeyError:
+            pass
+    return dup
+
+def lookup (barcode, ID_TYPES=['ISBN', 'UPC','EAN']):
     """Lookup the given barcode and return a list of possible matches"""
 
     matches = [] # list of {'desc', 'asin', 'type'}
@@ -33,9 +47,10 @@ def lookup (barcode, ID_TYPES=['UPC','EAN', 'ISBN']):
         try:
             result = api.item_lookup(barcode, SearchIndex='All', IdType=idtype)
             for item in result.Items.Item:
-                matches.append({'desc': unicode(item.ItemAttributes.Title),
-                                'asin': unicode(item.ASIN),
-                                'type': idtype})
+                if not _is_duplicate(item.ASIN, matches):
+                    matches.append({'desc': unicode(item.ItemAttributes.Title),
+                                    'asin': unicode(item.ASIN),
+                                    'type': idtype})
 
         except (errors.InvalidAccount, errors.InvalidClientTokenId, errors.MissingClientTokenId):
             print >>sys.stderr, "Amazon Product API lookup: bad account credentials"
