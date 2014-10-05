@@ -22,7 +22,7 @@ CREATE TABLE amazon (
 	is_ean     boolean DEFAULT false,
 	is_isbn    boolean DEFAULT false,
 	posted     datetime, -- automatically filled in by trigger, below
-	account_id binary(16) REFERENCES account(id)
+	UNIQUE(barcode, asin)
 );
 
 CREATE TRIGGER amazon_on_insert BEFORE INSERT ON `amazon`
