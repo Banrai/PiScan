@@ -31,7 +31,7 @@ def _is_duplicate (asin, current_list):
     dup = False
     for m in current_list:
         try:
-            if unicode(asin) == m['asin']:
+            if unicode(asin) == m['sku']:
                 dup = True
                 break
         except KeyError:
@@ -41,7 +41,7 @@ def _is_duplicate (asin, current_list):
 def lookup (barcode, ID_TYPES=['ISBN', 'UPC','EAN']):
     """Lookup the given barcode and return a list of possible matches"""
 
-    matches = [] # list of {'desc', 'asin', 'type'}
+    matches = [] # list of {'desc', 'sku', 'type', 'vnd'}
 
     for idtype in ID_TYPES:
         try:
@@ -49,8 +49,9 @@ def lookup (barcode, ID_TYPES=['ISBN', 'UPC','EAN']):
             for item in result.Items.Item:
                 if not _is_duplicate(item.ASIN, matches):
                     matches.append({'desc': unicode(item.ItemAttributes.Title),
-                                    'asin': unicode(item.ASIN),
-                                    'type': idtype})
+                                    'sku':  unicode(item.ASIN),
+                                    'type': idtype,
+                                    'vnd':  'AMZN:'+AMZLOCALE}) # vendor id
 
         except (errors.InvalidAccount, errors.InvalidClientTokenId, errors.MissingClientTokenId):
             print >>sys.stderr, "Amazon Product API lookup: bad account credentials"
