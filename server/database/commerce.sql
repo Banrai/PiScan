@@ -18,6 +18,7 @@ CREATE TABLE amazon (
 	id         binary(16) primary key NOT NULL,
 	barcode    varchar(13) NOT NULL, -- either GTIN.GTIN_CD (POD) or barcode.barcode (user-contributed)
 	asin       varchar(10) NOT NULL, -- the corresponding Amazon product code, as selected by the contributing user
+	product    varchar(512) NOT NULL,
 	is_upc     boolean DEFAULT false,
 	is_ean     boolean DEFAULT false,
 	is_isbn    boolean DEFAULT false,
