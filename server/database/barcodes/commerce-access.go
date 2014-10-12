@@ -80,8 +80,8 @@ func LookupAsin(stmt *sql.Stmt, barcode string) ([]*AMAZON, error) {
 // AMAZON data struct, and inserts the data from the struct as a new record
 // in the database
 func InsertAsin(stmt *sql.Stmt, rec AMAZON) error {
-	isUpc  := false
-	isEan  := false
+	isUpc := false
+	isEan := false
 	isIsbn := false
 
 	if rec.ProductType == UPC {

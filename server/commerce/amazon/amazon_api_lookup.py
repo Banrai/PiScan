@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) != 2:
         # Define the usage 
-        print sys.argv[0], '[barcode]'
+        print >>sys.stderr, sys.argv[0], '[barcode]'
 
     else:
         # lookup the barcode and return
@@ -84,6 +84,4 @@ if __name__ == "__main__":
         # or nothing if there were no matches
 
         products = lookup(sys.argv[1])
-        if len(products) > 0:
-            print json.dumps(products)
-
+        sys.stdout.write(json.dumps(products))
