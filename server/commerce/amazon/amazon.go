@@ -12,21 +12,13 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"github.com/Banrai/PiScan/server/commerce"
 	"github.com/Banrai/PiScan/server/database/barcodes"
 	"os/exec"
 	"path"
 	"runtime"
 	"strings"
 )
-
-// API represents the generalized output from *any* vendor's API
-// (eventually put this in a general commerce pkg...)
-type API struct {
-	SKU         string `json:"sku"`
-	ProductName string `json:"desc,omitempty"`
-	ProductType string `json:"type,omitempty"`
-	Vendor      string `json:"vnd"`
-}
 
 // The apiLookup function provides a simple interface to the python
 // amazon_api_lookup.py script using os/exec and returns the string result
@@ -54,13 +46,13 @@ func apiLookup(barcode string) (string, error) {
 // all those results into the barcodes database for future reference. It
 // returns a json string (a list of API structs, one per product) and error.
 func Lookup(barcode string, asinLookup, asinInsert *sql.Stmt) (string, error) {
-	results := make([]*API, 0)
+	results := make([]*commerce.API, 0)
 
 	// see if the barcode already exists in the db
 	products, err := barcodes.LookupAsin(asinLookup, barcode)
 	if err == nil && len(products) > 0 {
 		for _, product := range products {
-			result := new(API)
+			result := new(commerce.API)
 			result.SKU = product.Asin
 			result.ProductName = product.ProductName
 			result.ProductType = product.ProductType
@@ -72,7 +64,7 @@ func Lookup(barcode string, asinLookup, asinInsert *sql.Stmt) (string, error) {
 		api, aerr := apiLookup(barcode)
 		if aerr == nil {
 			// convert the api result string into a json object
-			var apiList []API
+			var apiList []commerce.API
 			jerr := json.Unmarshal([]byte(api), &apiList)
 			if jerr == nil {
 				for _, apiResult := range apiList {
