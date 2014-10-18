@@ -1,0 +1,3 @@
+        {{range $act := .}}
+        <li><a href="{{$act.Link}}">{{if $act.Icon}}<i class="{{$act.Icon}}"></i> {{end}}{{$act.Action}}</a></li>
+        {{end}}

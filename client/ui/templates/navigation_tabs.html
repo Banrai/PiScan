@@ -1,0 +1,18 @@
+   {{if .ShowTabs}}
+   <!-- tabs (outer) -->
+   <div class="row">
+    <div class="col-xs-6 col-md-4"></div>
+    <div class="clearfix visible-xs-block"></div>
+    <div class="col-xs-10 col-sm-6">
+     <!-- tabs (inner) -->
+     <div class="row">
+      <div class="col-xs-12 col-sm-8">
+       <ul class="nav nav-tabs" role="tablist">
+        <li{{if .Scanned}} class="active"{{end}}><a href="/scanned.html"><i class="fa fa-barcode"></i> Scanned</a></li>
+        <li{{if .Favorites}} class="active"{{end}}><a href="/favorites.html"><i class="fa fa-star-o"></i> Favorites</a></li>
+       </ul>
+      </div>
+     </div>
+    </div>
+   </div>
+   {{end}}

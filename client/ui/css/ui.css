@@ -1,0 +1,55 @@
+body {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.item-header {
+    margin: 0.5em;
+    padding: 0.5em;
+}
+
+.item {
+    margin: 0.5em;
+    padding: 0.5em;
+    -webkit-border-radius: 6px 6px 6px 6px;
+    border-radius: 6px 6px 6px 6px;
+}
+
+.item:hover {
+    background: #f0e68c;
+}
+
+.item:nth-child(even) {
+    background-color: #f3f3f3;
+}
+
+.item:nth-child(even):hover {
+    background-color: #f0e68c;
+}
+
+.product {
+    font-weight:bold;
+}
+
+.product-found {
+    color: #008000;
+}
+
+.product-unknown {
+    color: #ff1493;
+}
+
+.barcode {
+    font-size:0.8em;
+    color: #222;
+}
+
+.timestamp {
+    font-size:0.8em;
+    color: #696969;
+}
+
+.shopping {
+    color: #ff4500;
+}
+
