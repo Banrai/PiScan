@@ -6,6 +6,10 @@ This is a personal shopping and inventory-tracking device based on the [Raspberr
 
 ## Installation
 
+1. [Client device](client/README.md) (Raspberry Pi + barcode scanner)
+
+2. [Server](server/README.md)
+
 ## Usage
 
 
