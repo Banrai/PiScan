@@ -22,30 +22,9 @@
 
    {{template "navigation_tabs.html" .ActiveTab}}
 
-   <!-- items (outer) -->
-   <div class="row">
-    <div class="col-xs-6 col-md-4"></div>
-    <div class="clearfix visible-xs-block"></div>
-    <div class="col-xs-6 col-sm-4">
-
-     <!-- options (for selected items) -->
-     <div class="row item-header">
-      <div class="col-xs-2 col-sm-1"><input id="id_actions_chk" type="checkbox" /></div>
-      <div class="col-xs-10 col-sm-7">
-       <!-- an alternative to <select> -->
-       <a class="dropdown-toggle category" data-toggle="dropdown" href="#" style="display:none" id="id_actions"><strong><i class="fa fa-caret-square-o-down"></i> Apply Action</strong></a>
-       <ul id="category" class="dropdown-menu">
-        {{template "actions.html" .Actions}}
-       </ul>
-      </div>
-     </div>
-
-     <!-- items (inner) -->
-     {{template "items.html" .Items}}
-
-    </div>
-   </div>
-   <!-- /items (outer) -->
+   {{if .ShowItems}}
+   {{template "items.html" .}}
+   {{end}}
 
   </div>
   <!-- /container -->
@@ -53,6 +32,8 @@
   <script src="/js/jquery.min.js"></script>
   <script src="/js/bootstrap.min.js"></script>
   <script src="/js/ie10-viewport-bug-workaround.js"></script>
+  {{if .ShowItems}}
   <script src="/js/controls.js"></script>
+  {{end}}
  </body>
 </html>

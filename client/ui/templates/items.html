@@ -1,4 +1,23 @@
-     {{range $item := .}}
+   <!-- items (outer) -->
+   <div class="row">
+    <div class="col-xs-6 col-md-4"></div>
+    <div class="clearfix visible-xs-block"></div>
+    <div class="col-xs-6 col-sm-4">
+
+     <!-- options (for selected items) -->
+     <div class="row item-header">
+      <div class="col-xs-2 col-sm-1"><input id="id_actions_chk" type="checkbox" /></div>
+      <div class="col-xs-10 col-sm-7">
+       <!-- an alternative to <select> -->
+       <a class="dropdown-toggle category" data-toggle="dropdown" href="#" style="display:none" id="id_actions"><strong><i class="fa fa-caret-square-o-down"></i> Apply Action</strong></a>
+       <ul id="category" class="dropdown-menu">
+        {{template "actions.html" .Actions}}
+       </ul>
+      </div>
+     </div>
+
+     <!-- items (inner) -->
+     {{range $item := .Items}}
      <!-- item -->
      <div class="row item">
       <div class="col-xs-2 col-sm-1">{{if $item.Desc}}<input type="checkbox" class="chk_item" name="item" value="{{$item.Barcode}}:{{$item.Index}}" />{{else}}<a href="/remove/{{$item.Barcode}}"><i class="fa fa-trash-o"></i></a>{{end}}</div>
@@ -9,3 +28,7 @@
       </div>
      </div>
      {{end}}
+
+    </div>
+   </div>
+   <!-- /items (outer) -->
