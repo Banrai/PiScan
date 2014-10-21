@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS product (
 	is_favorite  integer DEFAULT 0, -- 0 = false, 1 = true
 	is_edit      integer DEFAULT 0, -- 0 = false, 1 = true
 	posted       integer, -- unix time (i.e., the number of seconds since 1970-01-01 00:00:00 UTC)
-	account      integer REFERENCES account
+	account      integer REFERENCES account(id)
 ); 
 
 -- `product_availability` defines where a given product can be purchased,
@@ -35,6 +35,6 @@ CREATE TABLE IF NOT EXISTS product (
 CREATE TABLE IF NOT EXISTS product_availability (
 	id        integer primary key AUTOINCREMENT,
 	vendor_id text NOT NULL,
-	product   integer REFERENCES product
+	product   integer REFERENCES product(id)
 );
 
