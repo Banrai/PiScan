@@ -1,11 +1,6 @@
 
-GOFILES=$(wildcard *.go **/*.go)
-
-format:
-	gofmt -w=true ${GOFILES}
-
 all:
-	go build -o PiScanner main.go
+	go build -o client/PiScanner client/scanner.go
 
 clean:
-	rm -rf PiScanner
+	rm -rf client/PiScanner
