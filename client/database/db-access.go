@@ -13,13 +13,14 @@ import (
 const (
 	// Anonymous Account
 	ANONYMOUS_EMAIL    = "anonymous@example.org"
-	ANONYMOUS_API_CODE = "123e4567-e89b-12d3-a456-426655440000"
+	ANONYMOUS_API_CODE = "12345678-abcd-9ef0-1234-567890abcdef"
 
 	// Prepared Statements
 	// User accounts
-	ADD_ACCOUNT  = "insert into account (email, api_code) values ($e, $a)"
-	GET_ACCOUNT  = "select id, api_code from account where email = $e"
-	GET_ACCOUNTS = "select id, email, api_code from account"
+	ADD_ACCOUNT    = "insert into account (email, api_code) values ($e, $a)"
+	GET_ACCOUNT    = "select id, api_code from account where email = $e"
+	GET_ACCOUNTS   = "select id, email, api_code from account"
+	UPDATE_ACCOUNT = "update account set email = $e, api_code = $a where id = $i"
 
 	// Products
 	ADD_ITEM           = "insert into product (barcode, product_desc, product_ind, posted, account) values ($b, $d, $i, strftime('%s','now'), $a)"
@@ -45,6 +46,24 @@ func (i *Item) Add(db *sqlite3.Conn, a *Account) error {
 		"$i": i.Index,
 		"$a": a.Id}
 	return db.Exec(ADD_ITEM, args)
+}
+
+func (i *Item) Delete(db *sqlite3.Conn) error {
+	// delete the Item
+	args := sqlite3.NamedArgs{"$i": i.Id}
+	return db.Exec(DELETE_ITEM, args)
+}
+
+func (i *Item) Favorite(db *sqlite3.Conn) error {
+	// update the Item, to show it is a favorite for this Account
+	args := sqlite3.NamedArgs{"$i": i.Id}
+	return db.Exec(FAVORITE_ITEM, args)
+}
+
+func (i *Item) Unfavorite(db *sqlite3.Conn) error {
+	// update the Item, to show it is not a favorite for this Account
+	args := sqlite3.NamedArgs{"$i": i.Id}
+	return db.Exec(UNFAVORITE_ITEM, args)
 }
 
 func GetItems(db *sqlite3.Conn, a *Account) ([]*Item, error) {
@@ -91,6 +110,12 @@ func (a *Account) Add(db *sqlite3.Conn) error {
 	// insert the Account object
 	args := sqlite3.NamedArgs{"$e": a.Email, "$a": a.APICode}
 	return db.Exec(ADD_ACCOUNT, args)
+}
+
+func (a *Account) Update(db *sqlite3.Conn, newEmail, newApi string) error {
+	// update this Account's email and API code
+	args := sqlite3.NamedArgs{"$i": a.Id, "$e": newEmail, "$a": newApi}
+	return db.Exec(UPDATE_ACCOUNT, args)
 }
 
 func GetAccount(db *sqlite3.Conn, email string) (*Account, error) {
