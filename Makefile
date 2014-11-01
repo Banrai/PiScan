@@ -1,9 +1,12 @@
 
 SHELL = /bin/sh
 
+# define the source/target folders
 SRC_ROOT = $(shell pwd)
 CLIENT   = $(SRC_ROOT)/client
+SERVER   = $(SRC_ROOT)/server
 
+# Raspberry Pi binaries
 PiScanner: $(CLIENT)/scanner.go
 	go build -o $(CLIENT)/PiScanner $^
 
@@ -14,6 +17,10 @@ PI_TARGETS = PiScanner WebApp
 
 clients: $(PI_TARGETS)
 
+# Server binary
+# (coming soon)
+
+# all components
 all: clients
 
 clean:
