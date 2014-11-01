@@ -11,11 +11,15 @@ import (
 )
 
 const (
+	// Anonymous Account
+	ANONYMOUS_EMAIL    = "anonymous@example.org"
+	ANONYMOUS_API_CODE = "123e4567-e89b-12d3-a456-426655440000"
+
 	// Prepared Statements
 	// User accounts
 	ADD_ACCOUNT  = "insert into account (email, api_code) values ($e, $a)"
 	GET_ACCOUNT  = "select id, api_code from account where email = $e"
-	GET_ACCOUNTS = "select email, api_code from account"
+	GET_ACCOUNTS = "select id, email, api_code from account"
 
 	// Products
 	ADD_ITEM           = "insert into product (barcode, product_desc, product_ind, posted, account) values ($b, $d, $i, strftime('%s','now'), $a)"
@@ -24,16 +28,6 @@ const (
 	DELETE_ITEM        = "delete from product where id = $i"
 	FAVORITE_ITEM      = "update product set is_favorite = 1 where id = $i"
 	UNFAVORITE_ITEM    = "update product set is_favorite = 0 where id = $i"
-)
-
-var (
-	// The sqlite db file definition (updated by the caller)
-	DB_PATH = ""
-	DB_FILE = ""
-
-	// The sqlite table definitions (tables.sql in this folder)
-	TABLES_PATH = ""
-	TABLES_SQL  = "tables.sql"
 )
 
 type Item struct {
@@ -121,15 +115,57 @@ func GetAccount(db *sqlite3.Conn, email string) (*Account, error) {
 	return result, nil
 }
 
-func InitializeDB() (*sqlite3.Conn, error) {
+func GetAllAccounts(db *sqlite3.Conn) ([]*Account, error) {
+	// find all the accounts currently registered
+	results := make([]*Account, 0)
+
+	row := make(sqlite3.RowMap)
+	for s, err := db.Query(GET_ACCOUNTS); err == nil; err = s.Next() {
+		var rowid int64
+		s.Scan(&rowid, row)
+
+		email, emailFound := row["email"]
+		api, apiFound := row["api_code"]
+		if emailFound && apiFound {
+			result := new(Account)
+			result.APICode = api.(string)
+			result.Id = rowid
+			result.Email = email.(string)
+			results = append(results, result)
+		}
+	}
+
+	return results, nil
+}
+
+func FetchAnonymousAccount(db *sqlite3.Conn) (*Account, error) {
+	// return the existing Anonymous account
+	anon, anonErr := GetAccount(db, ANONYMOUS_EMAIL)
+
+	// or create it, if it does not exist yet
+	if anon.Email == "" && anon.APICode == "" {
+		anon = new(Account)
+		anon.Email = ANONYMOUS_EMAIL
+		anon.APICode = ANONYMOUS_API_CODE
+		anonErr = anon.Add(db)
+		if anonErr == nil {
+			// make sure the Id value is correct
+			return GetAccount(db, ANONYMOUS_EMAIL)
+		}
+	}
+
+	return anon, anonErr
+}
+
+func InitializeDB(dbPath, dbFile, tablesPath string) (*sqlite3.Conn, error) {
 	// attempt to open the sqlite db file
-	db, dbErr := sqlite3.Open(path.Join(DB_PATH, DB_FILE))
+	db, dbErr := sqlite3.Open(path.Join(dbPath, dbFile))
 	if dbErr != nil {
 		return db, dbErr
 	}
 
 	// load the table definitions file
-	content, err := ioutil.ReadFile(path.Join(TABLES_PATH, TABLES_SQL))
+	content, err := ioutil.ReadFile(path.Join(tablesPath, "tables.sql"))
 	if err != nil {
 		return db, err
 	}
