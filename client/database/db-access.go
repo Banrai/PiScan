@@ -1,6 +1,8 @@
 // Copyright Banrai LLC. All rights reserved. Use of this source code is
 // governed by the license that can be found in the LICENSE file.
 
+// Package database provides access to the sqlite database on the Pi client
+
 package database
 
 import (
@@ -11,6 +13,12 @@ import (
 )
 
 const (
+	// Default database filename
+	SQLITE_FILE = "PiScanDB.sqlite"
+
+	// Default sql definitions file
+	TABLE_SQL_DEFINITIONS = "tables.sql"
+
 	// Anonymous Account
 	ANONYMOUS_EMAIL    = "anonymous@example.org"
 	ANONYMOUS_API_CODE = "12345678-abcd-9ef0-1234-567890abcdef"
@@ -182,15 +190,21 @@ func FetchAnonymousAccount(db *sqlite3.Conn) (*Account, error) {
 	return anon, anonErr
 }
 
-func InitializeDB(dbPath, dbFile, tablesPath string) (*sqlite3.Conn, error) {
+type ConnCoordinates struct {
+	DBPath       string
+	DBFile       string
+	DBTablesPath string
+}
+
+func InitializeDB(coords ConnCoordinates) (*sqlite3.Conn, error) {
 	// attempt to open the sqlite db file
-	db, dbErr := sqlite3.Open(path.Join(dbPath, dbFile))
+	db, dbErr := sqlite3.Open(path.Join(coords.DBPath, coords.DBFile))
 	if dbErr != nil {
 		return db, dbErr
 	}
 
 	// load the table definitions file
-	content, err := ioutil.ReadFile(path.Join(tablesPath, "tables.sql"))
+	content, err := ioutil.ReadFile(path.Join(coords.DBTablesPath, TABLE_SQL_DEFINITIONS))
 	if err != nil {
 		return db, err
 	}
