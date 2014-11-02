@@ -54,17 +54,6 @@ func renderTemplate(w http.ResponseWriter, p *Page) {
 	}
 }
 
-// getDesignatedAccount implements single-user mode (for now): it returns
-// either the anonymous account, or the first non-anonymous account found
-// on the sqlite database
-func getDesignatedAccount(db *sqlite3.Conn) (*database.Account, error) {
-	accounts, listErr := database.GetAllAccounts(db)
-	if len(accounts) == 0 {
-		return database.FetchAnonymousAccount(db)
-	}
-	return accounts[0], listErr
-}
-
 // InitializeTemplates confirms the given folder string leads to the html
 // template files, otherwise templates.Must() will complain
 func InitializeTemplates(folder string) {
@@ -84,7 +73,7 @@ func getItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoor
 	defer db.Close()
 
 	// get the Account for this request
-	acc, accErr := getDesignatedAccount(db)
+	acc, accErr := database.GetDesignatedAccount(db)
 	if accErr != nil {
 		http.Error(w, accErr.Error(), http.StatusInternalServerError)
 		return

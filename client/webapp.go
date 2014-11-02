@@ -31,7 +31,7 @@ func redirect(target string) http.HandlerFunc {
 func main() {
 	var templatesFolder, dbPath, dbFile, dbTablesDefinitionPath string
 	flag.StringVar(&templatesFolder, "templates", "", "Path to the html templates")
-	flag.StringVar(&dbPath, "dbPath", "", "Path to the sqlite file")
+	flag.StringVar(&dbPath, "dbPath", database.SQLITE_PATH, fmt.Sprintf("Path to the sqlite file (defaults to '%s')", database.SQLITE_PATH))
 	flag.StringVar(&dbFile, "dbFile", database.SQLITE_FILE, fmt.Sprintf("The sqlite database file (defaults to '%s')", database.SQLITE_FILE))
 	flag.StringVar(&dbTablesDefinitionPath, "tables", "", fmt.Sprintf("Path to the sqlite database definitions file (%s)", database.TABLE_SQL_DEFINITIONS))
 	flag.Parse()

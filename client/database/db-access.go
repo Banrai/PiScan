@@ -14,6 +14,7 @@ import (
 
 const (
 	// Default database filename
+	SQLITE_PATH = "/tmp"
 	SQLITE_FILE = "PiScanDB.sqlite"
 
 	// Default sql definitions file
@@ -196,6 +197,17 @@ func FetchAnonymousAccount(db *sqlite3.Conn) (*Account, error) {
 	}
 
 	return anon, anonErr
+}
+
+// GetDesignatedAccount implements single-user mode (for now): it returns
+// either the anonymous account, or the first non-anonymous account found
+// on the sqlite database
+func GetDesignatedAccount(db *sqlite3.Conn) (*Account, error) {
+	accounts, listErr := GetAllAccounts(db)
+	if len(accounts) == 0 {
+		return FetchAnonymousAccount(db)
+	}
+	return accounts[0], listErr
 }
 
 type ConnCoordinates struct {

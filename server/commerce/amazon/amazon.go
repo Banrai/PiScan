@@ -44,12 +44,14 @@ func apiLookup(barcode string) (string, error) {
 // The Lookup function first looks for the given barcode in the barcodes
 // database. If not found there, it tries the Amazon Product API, and save
 // all those results into the barcodes database for future reference. It
-// returns a json string (a list of API structs, one per product) and error.
-func Lookup(barcode string, asinLookup, asinInsert *sql.Stmt) (string, error) {
+// returns the json (a list of API structs, one per product) and error.
+func Lookup(barcode string, asinLookup, asinInsert *sql.Stmt) ([]*commerce.API, error) {
 	results := make([]*commerce.API, 0)
+	var resultErr error
 
 	// see if the barcode already exists in the db
 	products, err := barcodes.LookupAsin(asinLookup, barcode)
+	resultErr = err
 	if err == nil && len(products) > 0 {
 		for _, product := range products {
 			result := new(commerce.API)
@@ -60,8 +62,9 @@ func Lookup(barcode string, asinLookup, asinInsert *sql.Stmt) (string, error) {
 			results = append(results, result)
 		}
 	} else {
-		// if not, use the API instead, and save any results to the db
+		// if not, use the API instead, and save any results to the barcodes db
 		api, aerr := apiLookup(barcode)
+		resultErr = aerr
 		if aerr == nil {
 			// convert the api result string into a json object
 			var apiList []commerce.API
@@ -90,7 +93,5 @@ func Lookup(barcode string, asinLookup, asinInsert *sql.Stmt) (string, error) {
 		}
 	}
 
-	// marshall the results list back into a json string and return it
-	resultString, resultErr := json.Marshal(results)
-	return string(resultString), resultErr
+	return results, resultErr
 }
