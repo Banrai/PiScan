@@ -129,7 +129,7 @@ func getItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoor
 		titleBuffer.WriteString("Scanned")
 	}
 	titleBuffer.WriteString(" Item")
-	if len(itemList) != 0 {
+	if len(itemList) != 1 {
 		titleBuffer.WriteString("s")
 	}
 
