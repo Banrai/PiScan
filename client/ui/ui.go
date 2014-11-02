@@ -6,6 +6,7 @@
 package ui
 
 import (
+	"bytes"
 	"github.com/Banrai/PiScan/client/database"
 	"github.com/mxk/go-sqlite/sqlite3"
 	"html/template"
@@ -43,6 +44,7 @@ type Page struct {
 	ActiveTab *ActiveTab
 	Actions   []*Action
 	Items     []*database.Item
+	Scanned   bool
 	ShowItems bool
 }
 
@@ -70,9 +72,10 @@ func InitializeTemplates(folder string) {
 	TEMPLATES_INITIALIZED = true
 }
 
-func ScannedItems(dbCoords database.ConnCoordinates, w http.ResponseWriter, r *http.Request) {
-	// Return a template view containing the specific list of scanned items
-
+// getItems returns a list of scanned or favorited products, and the correct
+// correspoding options
+func getItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates, favorites bool) {
+	// attempt to connect to the db
 	db, err := database.InitializeDB(dbCoords)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -87,9 +90,18 @@ func ScannedItems(dbCoords database.ConnCoordinates, w http.ResponseWriter, r *h
 		return
 	}
 
-	// get all the scanned items for this Account
+	// define the appropriate fetch item function
+	fetch := func(db *sqlite3.Conn, acc *database.Account) ([]*database.Item, error) {
+		if favorites {
+			return database.GetFavoriteItems(db, acc)
+		} else {
+			return database.GetItems(db, acc)
+		}
+	}
+
+	// get all the desired items for this Account
 	items := make([]*database.Item, 0)
-	itemList, itemsErr := database.GetItems(db, acc)
+	itemList, itemsErr := fetch(db, acc) //database.GetItems(db, acc)
 	if itemsErr != nil {
 		http.Error(w, itemsErr.Error(), http.StatusInternalServerError)
 		return
@@ -99,12 +111,45 @@ func ScannedItems(dbCoords database.ConnCoordinates, w http.ResponseWriter, r *h
 	}
 
 	// actions
-	add := Action{Link: "/favorite", Icon: "fa fa-star-o", Action: "Add to favorites"}
-	buy := Action{Link: "/buyAmazon", Icon: "fa fa-shopping-cart", Action: "Buy from Amazon"}
+	actions := make([]*Action, 0)
+	actions = append(actions, &Action{Link: "/buyAmazon", Icon: "fa fa-shopping-cart", Action: "Buy from Amazon"})
+	actions = append(actions, &Action{Link: "/email", Icon: "fa fa-envelope", Action: "Email to me"})
+	actions = append(actions, &Action{Link: "/delete", Icon: "fa fa-trash", Action: "Delete"})
+	if favorites {
+		actions = append(actions, &Action{Link: "/unfavorite", Icon: "fa fa-star-o", Action: "Remove from favorites"})
+	} else {
+		actions = append(actions, &Action{Link: "/favorite", Icon: "fa fa-star", Action: "Add to favorites"})
+	}
 
-	p := &Page{Title: "PiScanner", ShowItems: true,
-		ActiveTab: &ActiveTab{Scanned: true, Favorites: false, ShowTabs: true},
-		Actions:   []*Action{&add, &buy},
+	// define the page title
+	var titleBuffer bytes.Buffer
+	if favorites {
+		titleBuffer.WriteString("Favorite")
+	} else {
+		titleBuffer.WriteString("Scanned")
+	}
+	titleBuffer.WriteString(" Item")
+	if len(itemList) != 0 {
+		titleBuffer.WriteString("s")
+	}
+
+	p := &Page{Title: titleBuffer.String(),
+		ShowItems: true,
+		Scanned:   !favorites,
+		ActiveTab: &ActiveTab{Scanned: !favorites, Favorites: favorites, ShowTabs: true},
+		Actions:   actions,
 		Items:     items}
 	renderTemplate(w, p)
+}
+
+// ScannedItems returns all the products scanned, favorited or not, barcode
+// lookup successful or not
+func ScannedItems(dbCoords database.ConnCoordinates, w http.ResponseWriter, r *http.Request) {
+	getItems(w, r, dbCoords, false)
+}
+
+// FavoritedItems returns all the products scanned and favorited by this
+// Account
+func FavoritedItems(dbCoords database.ConnCoordinates, w http.ResponseWriter, r *http.Request) {
+	getItems(w, r, dbCoords, true)
 }

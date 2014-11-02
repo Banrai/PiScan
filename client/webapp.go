@@ -47,7 +47,7 @@ func main() {
 	// dynamic request handlers
 	http.HandleFunc("/", redirect("/scanned/"))
 	http.HandleFunc("/scanned/", makeHandler(ui.ScannedItems, dbCoordinates))
-	//http.HandleFunc("/favorites/", makeHandler(ui.ScannedItems, dbCoordinates))
+	http.HandleFunc("/favorites/", makeHandler(ui.FavoritedItems, dbCoordinates))
 
 	// static resources
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir(path.Join(templatesFolder, "../css/")))))

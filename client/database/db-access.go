@@ -74,13 +74,13 @@ func (i *Item) Unfavorite(db *sqlite3.Conn) error {
 	return db.Exec(UNFAVORITE_ITEM, args)
 }
 
-func GetItems(db *sqlite3.Conn, a *Account) ([]*Item, error) {
+func fetchItems(db *sqlite3.Conn, a *Account, sql string) ([]*Item, error) {
 	// find all the items for this account
 	results := make([]*Item, 0)
 
 	args := sqlite3.NamedArgs{"$a": a.Id}
 	row := make(sqlite3.RowMap)
-	for s, err := db.Query(GET_ITEMS, args); err == nil; err = s.Next() {
+	for s, err := db.Query(sql, args); err == nil; err = s.Next() {
 		var rowid int64
 		s.Scan(&rowid, row)
 
@@ -106,6 +106,14 @@ func GetItems(db *sqlite3.Conn, a *Account) ([]*Item, error) {
 	}
 
 	return results, nil
+}
+
+func GetItems(db *sqlite3.Conn, a *Account) ([]*Item, error) {
+	return fetchItems(db, a, GET_ITEMS)
+}
+
+func GetFavoriteItems(db *sqlite3.Conn, a *Account) ([]*Item, error) {
+	return fetchItems(db, a, GET_FAVORITE_ITEMS)
 }
 
 type Account struct {
