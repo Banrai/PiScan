@@ -3,7 +3,8 @@
     <div class="col-xs-6 col-md-4"></div>
     <div class="clearfix visible-xs-block"></div>
     <div class="col-xs-6 col-sm-4">
-
+	
+	{{if .Items}}
      <!-- options (for selected items) -->
      <div class="row item-header">
       <div class="col-xs-2 col-sm-1"><input id="id_actions_chk" type="checkbox" /></div>
@@ -28,6 +29,14 @@
       </div>
      </div>
      {{end}}
+	{{else}}
+	<div class="row item">
+	  <div class="col-xs-2 col-sm-1"></div>
+	  <div class="col-xs-10 col-sm-7 no-items">
+	    <h2><i class="fa fa-frown-o"></i> No {{if .Scanned}}Scanned{{else}}Favorite{{end}} Items</h2>
+	  </div>
+	</div>
+	{{end}}
 
     </div>
    </div>
