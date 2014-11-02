@@ -14,10 +14,17 @@ import (
 	"path"
 )
 
-// have each request handler open its own db connection per request
+// Have each request handler open its own db connection per request
 func makeHandler(fn func(database.ConnCoordinates, http.ResponseWriter, *http.Request), db database.ConnCoordinates) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fn(db, w, r)
+	}
+}
+
+// Use this to redirect one request to another target
+func redirect(target string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, target, http.StatusFound)
 	}
 }
 
@@ -33,12 +40,14 @@ func main() {
 	// confirm the html templates
 	ui.InitializeTemplates(templatesFolder)
 
-	// coordinates for connecting to the sqlite database
+	// coordinates for connecting to the sqlite database (from the command line options)
 	dbCoordinates := database.ConnCoordinates{dbPath, dbFile, dbTablesDefinitionPath}
 
 	/* define the server handlers */
 	// dynamic request handlers
-	http.HandleFunc("/", makeHandler(ui.ScannedItems, dbCoordinates))
+	http.HandleFunc("/", redirect("/scanned/"))
+	http.HandleFunc("/scanned/", makeHandler(ui.ScannedItems, dbCoordinates))
+	//http.HandleFunc("/favorites/", makeHandler(ui.ScannedItems, dbCoordinates))
 
 	// static resources
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir(path.Join(templatesFolder, "../css/")))))

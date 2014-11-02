@@ -1,12 +1,13 @@
 // Copyright Banrai LLC. All rights reserved. Use of this source code is
 // governed by the license that can be found in the LICENSE file.
 
-// Package ui provides http request handlers for the WebApp
+// Package ui provides http request handlers for the Pi client WebApp
 
 package ui
 
 import (
 	"github.com/Banrai/PiScan/client/database"
+	"github.com/mxk/go-sqlite/sqlite3"
 	"html/template"
 	"net/http"
 	"path"
@@ -51,6 +52,19 @@ func renderTemplate(w http.ResponseWriter, p *Page) {
 	}
 }
 
+// getDesignatedAccount implements single-user mode (for now): it returns
+// either the anonymous account, or the first non-anonymous account found
+// on the sqlite database
+func getDesignatedAccount(db *sqlite3.Conn) (*database.Account, error) {
+	accounts, listErr := database.GetAllAccounts(db)
+	if len(accounts) == 0 {
+		return database.FetchAnonymousAccount(db)
+	}
+	return accounts[0], listErr
+}
+
+// InitializeTemplates confirms the given folder string leads to the html
+// template files, otherwise templates.Must() will complain
 func InitializeTemplates(folder string) {
 	ITEM_TEMPLATES = template.Must(template.ParseFiles(TEMPLATE_LIST(folder, ITEM_TEMPLATE_FILES)...))
 	TEMPLATES_INITIALIZED = true
@@ -66,16 +80,16 @@ func ScannedItems(dbCoords database.ConnCoordinates, w http.ResponseWriter, r *h
 	}
 	defer db.Close()
 
-	// get the Account for this request (manage this beter in the future)
-	anon, anonErr := database.FetchAnonymousAccount(db)
-	if anonErr != nil {
-		http.Error(w, anonErr.Error(), http.StatusInternalServerError)
+	// get the Account for this request
+	acc, accErr := getDesignatedAccount(db)
+	if accErr != nil {
+		http.Error(w, accErr.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// get all the scanned items for this Account
 	items := make([]*database.Item, 0)
-	itemList, itemsErr := database.GetItems(db, anon)
+	itemList, itemsErr := database.GetItems(db, acc)
 	if itemsErr != nil {
 		http.Error(w, itemsErr.Error(), http.StatusInternalServerError)
 		return
@@ -85,8 +99,8 @@ func ScannedItems(dbCoords database.ConnCoordinates, w http.ResponseWriter, r *h
 	}
 
 	// actions
-	add := Action{Link: "#", Icon: "fa fa-star-o", Action: "Add to favorites"}
-	buy := Action{Link: "#", Icon: "fa fa-shopping-cart", Action: "Buy from Amazon"}
+	add := Action{Link: "/favorite", Icon: "fa fa-star-o", Action: "Add to favorites"}
+	buy := Action{Link: "/buyAmazon", Icon: "fa fa-shopping-cart", Action: "Buy from Amazon"}
 
 	p := &Page{Title: "PiScanner", ShowItems: true,
 		ActiveTab: &ActiveTab{Scanned: true, Favorites: false, ShowTabs: true},
