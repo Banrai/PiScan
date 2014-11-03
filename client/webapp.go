@@ -48,6 +48,12 @@ func main() {
 	http.HandleFunc("/", redirect("/scanned/"))
 	http.HandleFunc("/scanned/", makeHandler(ui.ScannedItems, dbCoordinates))
 	http.HandleFunc("/favorites/", makeHandler(ui.FavoritedItems, dbCoordinates))
+	//http.HandleFunc("/buyAmazon/", makeHandler(ui.BuyFromAmazon, dbCoordinates))
+	//http.HandleFunc("/delete/", makeHandler(ui.DeleteItems, dbCoordinates))
+	//http.HandleFunc("/favorite/", makeHandler(ui.FavoriteItem, dbCoordinates))
+	//http.HandleFunc("/unfavorite/", makeHandler(ui.UnfavoriteItem, dbCoordinates))
+	//http.HandleFunc("/remove/", makeHandler(ui.RemoveItem, dbCoordinates))
+	//http.HandleFunc("/input/", makeHandler(ui.InputItem, dbCoordinates))
 
 	// static resources
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir(path.Join(templatesFolder, "../css/")))))

@@ -102,13 +102,15 @@ func getItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoor
 	// actions
 	actions := make([]*Action, 0)
 	actions = append(actions, &Action{Link: "/buyAmazon", Icon: "fa fa-shopping-cart", Action: "Buy from Amazon"})
-	actions = append(actions, &Action{Link: "/email", Icon: "fa fa-envelope", Action: "Email to me"})
-	actions = append(actions, &Action{Link: "/delete", Icon: "fa fa-trash", Action: "Delete"})
+	if acc.Email != database.ANONYMOUS_EMAIL {
+		actions = append(actions, &Action{Link: "/email", Icon: "fa fa-envelope", Action: "Email to me"})
+	}
 	if favorites {
 		actions = append(actions, &Action{Link: "/unfavorite", Icon: "fa fa-star-o", Action: "Remove from favorites"})
 	} else {
 		actions = append(actions, &Action{Link: "/favorite", Icon: "fa fa-star", Action: "Add to favorites"})
 	}
+	actions = append(actions, &Action{Link: "/delete", Icon: "fa fa-trash", Action: "Delete"})
 
 	// define the page title
 	var titleBuffer bytes.Buffer
