@@ -68,15 +68,6 @@ func main() {
 	}
 	defer asinInsert.Close()
 
-	/* database.Item
-	   type Item struct {
-	   	Id      int64
-	   	Desc    string
-	   	Barcode string
-	   	Index   int64
-	   	Since   string
-	   }*/
-
 	// coordinates for connecting to the sqlite database (from the command line options)
 	dbCoordinates := database.ConnCoordinates{sqlitePath, sqliteFile, sqliteTablesDefinitionPath}
 
@@ -101,8 +92,9 @@ func main() {
 				return
 			}
 
+			productsFound := 0
 			for i, product := range products {
-				fmt.Println(fmt.Sprintf("(%d) SKU %s Name %s Type %s Vendor %s", i, product.SKU, product.ProductName, product.ProductType, product.Vendor))
+				//fmt.Println(fmt.Sprintf("(%d) SKU %s Name %s Type %s Vendor %s", i, product.SKU, product.ProductName, product.ProductType, product.Vendor))
 				if len(product.ProductName) > 0 {
 					// convert the commerce.API struct into a database.Item
 					// so that it can be logged into the Pi client sqlite db
@@ -111,7 +103,15 @@ func main() {
 						Barcode: barcode,
 						Desc:    product.ProductName}
 					item.Add(db, acc)
+					productsFound += 1
 				}
+			}
+
+			if productsFound == 0 {
+				// add it to the Pi client sqlite db as "unknown"
+				// so that it can be manually edited/input
+				unknownItem := database.Item{Index: 0, Barcode: barcode}
+				unknownItem.Add(db, acc)
 			}
 		}
 	}
