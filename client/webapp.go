@@ -14,19 +14,9 @@ import (
 	"path"
 )
 
-// Have each request handler open its own db connection per request
-func makeHandler(fn func(database.ConnCoordinates, http.ResponseWriter, *http.Request), db database.ConnCoordinates) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		fn(db, w, r)
-	}
-}
-
-// Use this to redirect one request to another target
-func redirect(target string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, target, http.StatusFound)
-	}
-}
+const (
+	MIME_JSON = "application/json"
+)
 
 func main() {
 	var templatesFolder, dbPath, dbFile, dbTablesDefinitionPath string
@@ -45,14 +35,14 @@ func main() {
 
 	/* define the server handlers */
 	// dynamic request handlers
-	http.HandleFunc("/", redirect("/scanned/"))
-	http.HandleFunc("/scanned/", makeHandler(ui.ScannedItems, dbCoordinates))
-	http.HandleFunc("/favorites/", makeHandler(ui.FavoritedItems, dbCoordinates))
+	http.HandleFunc("/", ui.Redirect("/scanned/"))
+	http.HandleFunc("/scanned/", ui.MakeHTMLHandler(ui.ScannedItems, dbCoordinates))
+	http.HandleFunc("/favorites/", ui.MakeHTMLHandler(ui.FavoritedItems, dbCoordinates))
 	//http.HandleFunc("/buyAmazon/", makeHandler(ui.BuyFromAmazon, dbCoordinates))
-	//http.HandleFunc("/delete/", makeHandler(ui.DeleteItems, dbCoordinates))
+	http.HandleFunc("/delete/", ui.MakeHTMLHandler(ui.DeleteItems, dbCoordinates))
 	//http.HandleFunc("/favorite/", makeHandler(ui.FavoriteItem, dbCoordinates))
 	//http.HandleFunc("/unfavorite/", makeHandler(ui.UnfavoriteItem, dbCoordinates))
-	//http.HandleFunc("/remove/", makeHandler(ui.RemoveItem, dbCoordinates))
+	http.HandleFunc("/remove/", ui.MakeHandler(ui.RemoveSingleItem, dbCoordinates, MIME_JSON))
 	//http.HandleFunc("/input/", makeHandler(ui.InputItem, dbCoordinates))
 
 	// static resources

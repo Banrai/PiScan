@@ -117,6 +117,17 @@ func GetFavoriteItems(db *sqlite3.Conn, a *Account) ([]*Item, error) {
 	return fetchItems(db, a, GET_FAVORITE_ITEMS)
 }
 
+func GetSingleItem(db *sqlite3.Conn, a *Account, id int64) (*Item, error) {
+	item := new(Item)
+	items, err := GetItems(db, a)
+	for _, i := range items {
+		if i.Id == id {
+			return i, err
+		}
+	}
+	return item, err
+}
+
 type Account struct {
 	Id      int64
 	Email   string

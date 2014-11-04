@@ -5,6 +5,7 @@
     <div class="col-xs-6 col-sm-4">
 	
 	{{if .Items}}
+	 <form id="bulkActions" method="POST" action="">
      <!-- options (for selected items) -->
      <div class="row item-header">
       <div class="col-xs-2 col-sm-1"><input id="id_actions_chk" type="checkbox" /></div>
@@ -20,8 +21,8 @@
      <!-- items (inner) -->
      {{range $item := .Items}}
      <!-- item -->
-     <div class="row item">
-      <div class="col-xs-2 col-sm-1">{{if $item.Desc}}<input type="checkbox" class="chk_item" name="item" value="{{$item.Id}}" />{{else}}<a href="/remove/{{$item.Id}}"><i class="fa fa-trash-o"></i></a>{{end}}</div>
+     <div class="row item" id="Item_{{$item.Id}}">
+      <div class="col-xs-2 col-sm-1">{{if $item.Desc}}<input type="checkbox" class="chk_item" name="item" value="{{$item.Id}}" />{{else}}<a class="trash" href="#{{$item.Id}}"><i class="fa fa-trash-o"></i></a>{{end}}</div>
       <div class="col-xs-10 col-sm-7">
        <div class="product product-{{if $item.Desc}}found{{else}}unknown{{end}}">{{if $item.Desc}}{{$item.Desc}}{{else}}<i class="fa fa-exclamation-triangle"></i> NOT FOUND <a href="/input/{{$item.Id}}"><i class="fa fa-pencil"></i></a>{{end}}</div>
        <div class="barcode"><i class="fa fa-barcode"></i> {{$item.Barcode}}</div>
@@ -29,6 +30,7 @@
       </div>
      </div>
      {{end}}
+	</form>
 	{{else}}
 	<div class="row">
 	  <div class="col-xs-2 col-sm-1"></div>
