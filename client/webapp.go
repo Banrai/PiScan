@@ -40,8 +40,8 @@ func main() {
 	http.HandleFunc("/favorites/", ui.MakeHTMLHandler(ui.FavoritedItems, dbCoordinates))
 	//http.HandleFunc("/buyAmazon/", makeHandler(ui.BuyFromAmazon, dbCoordinates))
 	http.HandleFunc("/delete/", ui.MakeHTMLHandler(ui.DeleteItems, dbCoordinates))
-	//http.HandleFunc("/favorite/", makeHandler(ui.FavoriteItem, dbCoordinates))
-	//http.HandleFunc("/unfavorite/", makeHandler(ui.UnfavoriteItem, dbCoordinates))
+	http.HandleFunc("/favorite/", ui.MakeHTMLHandler(ui.FavoriteItems, dbCoordinates))
+	http.HandleFunc("/unfavorite/", ui.MakeHTMLHandler(ui.UnfavoriteItems, dbCoordinates))
 	http.HandleFunc("/remove/", ui.MakeHandler(ui.RemoveSingleItem, dbCoordinates, MIME_JSON))
 	//http.HandleFunc("/input/", makeHandler(ui.InputItem, dbCoordinates))
 

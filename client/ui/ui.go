@@ -174,6 +174,57 @@ func deleteItem(db *sqlite3.Conn, acc *database.Account, id int64) (bool, error)
 	return result, itemErr
 }
 
+// processItems fetches all the Items for the given Account, and the compares
+// them to the id list posted from the form. All the matches get applied
+// the given function: delete, favorite, unfavorite, etc.
+func processItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates, fn func(*database.Item, *sqlite3.Conn), successTarget string) {
+	// attempt to connect to the db
+	db, err := database.InitializeDB(dbCoords)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// get the Account for this request
+	acc, accErr := database.GetDesignatedAccount(db)
+	if accErr != nil {
+		http.Error(w, accErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// get all the Items for this Account
+	// and store them in a map by their Id
+	items, itemsErr := database.GetItems(db, acc)
+	if itemsErr != nil {
+		http.Error(w, itemsErr.Error(), http.StatusInternalServerError)
+		return
+	}
+	accountItems := make(map[int64]*database.Item)
+	for _, item := range items {
+		accountItems[item.Id] = item
+	}
+
+	// get the list of item ids from the POST values
+	// and apply the processing function
+	if "POST" == r.Method {
+		r.ParseForm()
+		if idVals, exists := r.PostForm["item"]; exists {
+			for _, idString := range idVals {
+				id, idErr := strconv.ParseInt(idString, 10, 64)
+				if idErr == nil {
+					if accountItem, ok := accountItems[id]; ok {
+						fn(accountItem, db)
+					}
+				}
+			}
+		}
+	}
+
+	// finally, return home, to the scanned items list
+	http.Redirect(w, r, successTarget, http.StatusFound)
+}
+
 /* HTML Response Functions (via templates) */
 
 func renderTemplate(w http.ResponseWriter, p *Page) {
@@ -205,44 +256,28 @@ func FavoritedItems(w http.ResponseWriter, r *http.Request, db database.ConnCoor
 // attempts to remove them from the client db. Unless it hits a critical
 // error, it returns home, to the list of scanned items
 func DeleteItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates) {
-	// attempt to connect to the db
-	db, err := database.InitializeDB(dbCoords)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	del := func(i *database.Item, db *sqlite3.Conn) {
+		i.Delete(db)
 	}
-	defer db.Close()
+	processItems(w, r, dbCoords, del, "/")
+}
 
-	// get the Account for this request
-	acc, accErr := database.GetDesignatedAccount(db)
-	if accErr != nil {
-		http.Error(w, accErr.Error(), http.StatusInternalServerError)
-		return
+// FavoriteItems accepts a form post of one or more Item.Id values, and
+// attempts to change their status in the client db to 'favorite'
+func FavoriteItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates) {
+	fav := func(i *database.Item, db *sqlite3.Conn) {
+		i.Favorite(db)
 	}
+	processItems(w, r, dbCoords, fav, "/favorites/")
+}
 
-	// find the specific Items to remove
-	// get the list if item ids from the POST values
-	// send a server error only if there is an error with the sqlite db,
-	// otherwise, just redirect back home to the scanned items list
-	if "POST" == r.Method {
-		r.ParseForm()
-		if idVals, exists := r.PostForm["item"]; exists {
-			for _, idString := range idVals {
-				id, idErr := strconv.ParseInt(idString, 10, 64)
-				if idErr == nil {
-					_, deleteErr := deleteItem(db, acc, id)
-					if deleteErr != nil {
-						// this is the only time we reply with 500
-						http.Error(w, deleteErr.Error(), http.StatusInternalServerError)
-						return
-					}
-				}
-			}
-		}
+// UnfavoriteItems accepts a form post of one or more Item.Id values,
+// and attempts to change their status in the client db to not 'favorite'
+func UnfavoriteItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates) {
+	fav := func(i *database.Item, db *sqlite3.Conn) {
+		i.Unfavorite(db)
 	}
-
-	// finally, return home, to the scanned items list
-	http.Redirect(w, r, "/", http.StatusFound)
+	processItems(w, r, dbCoords, fav, "/favorites/")
 }
 
 /* Ajax Response Functions (as strings via MakeHandler) */
