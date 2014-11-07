@@ -19,11 +19,10 @@ const (
 )
 
 func main() {
-	var templatesFolder, dbPath, dbFile, dbTablesDefinitionPath string
+	var templatesFolder, dbPath, dbFile string
 	flag.StringVar(&templatesFolder, "templates", "", "Path to the html templates")
 	flag.StringVar(&dbPath, "dbPath", database.SQLITE_PATH, fmt.Sprintf("Path to the sqlite file (defaults to '%s')", database.SQLITE_PATH))
 	flag.StringVar(&dbFile, "dbFile", database.SQLITE_FILE, fmt.Sprintf("The sqlite database file (defaults to '%s')", database.SQLITE_FILE))
-	flag.StringVar(&dbTablesDefinitionPath, "tables", "", fmt.Sprintf("Path to the sqlite database definitions file (%s)", database.TABLE_SQL_DEFINITIONS))
 	flag.Parse()
 
 	/* set the server ready for use */
@@ -31,7 +30,7 @@ func main() {
 	ui.InitializeTemplates(templatesFolder)
 
 	// coordinates for connecting to the sqlite database (from the command line options)
-	dbCoordinates := database.ConnCoordinates{dbPath, dbFile, dbTablesDefinitionPath}
+	dbCoordinates := database.ConnCoordinates{DBPath: dbPath, DBFile: dbFile}
 
 	/* define the server handlers */
 	// dynamic request handlers

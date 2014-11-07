@@ -326,18 +326,20 @@ func InitializeDB(coords ConnCoordinates) (*sqlite3.Conn, error) {
 		return db, dbErr
 	}
 
-	// load the table definitions file
-	content, err := ioutil.ReadFile(path.Join(coords.DBTablesPath, TABLE_SQL_DEFINITIONS))
-	if err != nil {
-		return db, err
-	}
-
-	// attempt to create (if not exists) each table
-	tables := strings.Split(string(content), ";")
-	for _, table := range tables {
-		err = db.Exec(table)
+	// load the table definitions file, if coords.DBTablesPath is defined
+	if len(coords.DBTablesPath) > 0 {
+		content, err := ioutil.ReadFile(path.Join(coords.DBTablesPath, TABLE_SQL_DEFINITIONS))
 		if err != nil {
 			return db, err
+		}
+
+		// attempt to create (if not exists) each table
+		tables := strings.Split(string(content), ";")
+		for _, table := range tables {
+			err = db.Exec(table)
+			if err != nil {
+				return db, err
+			}
 		}
 	}
 
