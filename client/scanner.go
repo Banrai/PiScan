@@ -92,9 +92,25 @@ func main() {
 				return
 			}
 
+			// get the list of current Vendors according to the Pi client database
+			// and map them according to their API vendor id string
+			vendors := make(map[string]*database.Vendor)
+			for _, v := range database.GetAllVendors(db) {
+				vendors[v.VendorId] = v
+			}
+
 			productsFound := 0
 			for i, product := range products {
 				//fmt.Println(fmt.Sprintf("(%d) SKU %s Name %s Type %s Vendor %s", i, product.SKU, product.ProductName, product.ProductType, product.Vendor))
+				v, exists := vendors[product.Vendor]
+				if !exists {
+					amazonId, amazonErr := database.AddVendor(db, product.Vendor, "Amazon")
+					if amazonErr == nil {
+						v = database.GetVendor(db, amazonId)
+						vendors[product.Vendor] = v
+					}
+				}
+
 				if len(product.ProductName) > 0 {
 					// convert the commerce.API struct into a database.Item
 					// so that it can be logged into the Pi client sqlite db
@@ -102,7 +118,11 @@ func main() {
 						Index:   int64(i),
 						Barcode: barcode,
 						Desc:    product.ProductName}
-					item.Add(db, acc)
+					pk, insertErr := item.Add(db, acc)
+					if insertErr == nil {
+						// also log the vendor/product code combination
+						database.AddVendorProduct(db, product.SKU, v.Id, pk)
+					}
 					productsFound += 1
 				}
 			}

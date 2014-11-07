@@ -6,6 +6,7 @@
 package database
 
 import (
+	"fmt"
 	"github.com/mxk/go-sqlite/sqlite3"
 	"io/ioutil"
 	"path"
@@ -19,6 +20,9 @@ const (
 
 	// Default sql definitions file
 	TABLE_SQL_DEFINITIONS = "tables.sql"
+
+	// Execution constants
+	BAD_PK = -1
 
 	// Anonymous Account
 	ANONYMOUS_EMAIL    = "anonymous@example.org"
@@ -38,7 +42,26 @@ const (
 	DELETE_ITEM        = "delete from product where id = $i"
 	FAVORITE_ITEM      = "update product set is_favorite = 1 where id = $i"
 	UNFAVORITE_ITEM    = "update product set is_favorite = 0 where id = $i"
+
+	// Commerce
+	ADD_VENDOR         = "insert into vendor (vendor_id, display_name) values ($v, $n)"
+	ADD_VENDOR_PRODUCT = "insert into product_availability (vendor, product_code, product) values ($v, $p, $i)"
+	GET_VENDOR         = "select id, vendor_id, display_name from vendor where id = $i"
+	GET_VENDORS        = "select distinct id, vendor_id, display_name from vendor"
+	GET_VENDOR_PRODUCT = "select v.vendor_id, pa.product_code from vendor v, product_availability pa where v.id = pa.vendor and pa.product = $i"
 )
+
+func getPK(db *sqlite3.Conn, table string) int64 {
+	// find and return the most recently-inserted
+	// primary key, based on the table name
+	sql := fmt.Sprintf("select seq from sqlite_sequence where name='%s'", table)
+
+	var rowid int64
+	for s, err := db.Query(sql); err == nil; err = s.Next() {
+		s.Scan(&rowid)
+	}
+	return rowid
+}
 
 type Item struct {
 	Id      int64
@@ -48,13 +71,18 @@ type Item struct {
 	Since   string
 }
 
-func (i *Item) Add(db *sqlite3.Conn, a *Account) error {
+func (i *Item) Add(db *sqlite3.Conn, a *Account) (int64, error) {
 	// insert the Item object
 	args := sqlite3.NamedArgs{"$b": i.Barcode,
 		"$d": i.Desc,
 		"$i": i.Index,
 		"$a": a.Id}
-	return db.Exec(ADD_ITEM, args)
+	result := db.Exec(ADD_ITEM, args)
+	if result == nil {
+		pk := getPK(db, "product")
+		return pk, result
+	}
+	return BAD_PK, result
 }
 
 func (i *Item) Delete(db *sqlite3.Conn) error {
@@ -127,6 +155,70 @@ func GetSingleItem(db *sqlite3.Conn, a *Account, id int64) (*Item, error) {
 	}
 	return item, err
 }
+
+type Vendor struct {
+	Id          int64
+	VendorId    string
+	DisplayName string
+}
+
+func AddVendor(db *sqlite3.Conn, vendorId, vendorDisplayName string) (int64, error) {
+	args := sqlite3.NamedArgs{"$v": vendorId,
+		"$n": vendorDisplayName}
+	result := db.Exec(ADD_VENDOR, args)
+	if result == nil {
+		pk := getPK(db, "vendor")
+		return pk, result
+	}
+	return BAD_PK, result
+}
+
+func AddVendorProduct(db *sqlite3.Conn, productCode string, vendorId, itemId int64) error {
+	args := sqlite3.NamedArgs{"$v": vendorId,
+		"$p": productCode,
+		"$i": itemId}
+	return db.Exec(ADD_VENDOR_PRODUCT, args)
+}
+
+func GetVendor(db *sqlite3.Conn, vendorId int64) *Vendor {
+	result := new(Vendor)
+	row := make(sqlite3.RowMap)
+	args := sqlite3.NamedArgs{"$i": vendorId}
+	for s, err := db.Query(GET_VENDOR, args); err == nil; err = s.Next() {
+		var rowid int64
+		s.Scan(&rowid, row)
+		vendor, vendorFound := row["vendor_id"]
+		vendorName, vendorNameFound := row["display_name"]
+		if vendorFound && vendorNameFound {
+			result.Id = rowid
+			result.VendorId = vendor.(string)
+			result.DisplayName = vendorName.(string)
+		}
+	}
+	return result
+}
+
+func GetAllVendors(db *sqlite3.Conn) []*Vendor {
+	results := make([]*Vendor, 0)
+	row := make(sqlite3.RowMap)
+	for s, err := db.Query(GET_VENDORS); err == nil; err = s.Next() {
+		var rowid int64
+		s.Scan(&rowid, row)
+		vendor, vendorFound := row["vendor_id"]
+		vendorName, vendorNameFound := row["display_name"]
+		if vendorFound && vendorNameFound {
+			v := Vendor{Id: rowid, VendorId: vendor.(string), DisplayName: vendorName.(string)}
+			results = append(results, &v)
+		}
+	}
+	return results
+}
+
+/*
+func GetVendorCode(db *sqlite3.Conn, itemId int64) string {
+	// apply the GET_VENDOR_PRODUCT query and return the result
+	// GET_VENDOR_PRODUCT = "select product_code from product_availability where product = $i"
+}*/
 
 type Account struct {
 	Id      int64

@@ -28,13 +28,27 @@ CREATE TABLE IF NOT EXISTS product (
 	account      integer REFERENCES account(id)
 ); 
 
+-- `vendor` defines the list of commercial vendors for products.
+-- vendor_id is the description/result of the vendor's API, and
+-- display_name is the string to use in the UI.
+
+CREATE TABLE IF NOT EXISTS vendor (
+	id           integer primary key AUTOINCREMENT,
+	vendor_id    text NOT NULL,
+	display_name text NOT NULL,
+	UNIQUE(vendor_id)
+);
+
 -- `product_availability` defines where a given product can be purchased,
 -- according to the commerce-related tables in the server database (the
--- unique list of vendor ids provides the "Buy from ..." action options)
+-- unique list of vendor ids provides the "Buy from ..." action options,
+-- and the product_codes define how that vendor references them)
 
 CREATE TABLE IF NOT EXISTS product_availability (
-	id        integer primary key AUTOINCREMENT,
-	vendor_id text NOT NULL,
-	product   integer REFERENCES product(id)
+	id           integer primary key AUTOINCREMENT,
+	product_code text NOT NULL,
+	product      integer REFERENCES product(id),
+	vendor       integer REFERENCES vendor(id),
+	UNIQUE(product_code, product, vendor)
 );
 

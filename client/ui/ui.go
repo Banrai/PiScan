@@ -113,7 +113,7 @@ func getItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoor
 
 	// get all the desired items for this Account
 	items := make([]*database.Item, 0)
-	itemList, itemsErr := fetch(db, acc) //database.GetItems(db, acc)
+	itemList, itemsErr := fetch(db, acc)
 	if itemsErr != nil {
 		http.Error(w, itemsErr.Error(), http.StatusInternalServerError)
 		return
@@ -124,7 +124,10 @@ func getItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoor
 
 	// actions
 	actions := make([]*Action, 0)
-	actions = append(actions, &Action{Link: "/buyAmazon/", Icon: "fa fa-shopping-cart", Action: "Buy from Amazon"})
+	// commerce options
+	for _, vendor := range database.GetAllVendors(db) {
+		actions = append(actions, &Action{Link: fmt.Sprintf("/buy%s/", vendor.VendorId), Icon: "fa fa-shopping-cart", Action: fmt.Sprintf("Buy from %s", vendor.DisplayName)})
+	}
 	if acc.Email != database.ANONYMOUS_EMAIL {
 		actions = append(actions, &Action{Link: "/email/", Icon: "fa fa-envelope", Action: "Email to me"})
 	}
