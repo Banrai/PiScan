@@ -36,9 +36,9 @@ const (
 	UPDATE_ACCOUNT = "update account set email = $e, api_code = $a where id = $i"
 
 	// Products
-	ADD_ITEM           = "insert into product (barcode, product_desc, product_ind, posted, account) values ($b, $d, $i, strftime('%s','now'), $a)"
-	GET_ITEMS          = "select id, barcode, product_desc, product_ind, datetime(posted) from product where account = $a"
-	GET_FAVORITE_ITEMS = "select id, barcode, product_desc, product_ind, datetime(posted) from product where is_favorite = 1 and account = $a"
+	ADD_ITEM           = "insert into product (barcode, product_desc, product_ind, account) values ($b, $d, $i, $a)"
+	GET_ITEMS          = "select id, barcode, product_desc, product_ind, posted from product where account = $a"
+	GET_FAVORITE_ITEMS = "select id, barcode, product_desc, product_ind, posted from product where is_favorite = 1 and account = $a"
 	DELETE_ITEM        = "delete from product where id = $i"
 	FAVORITE_ITEM      = "update product set is_favorite = 1 where id = $i"
 	UNFAVORITE_ITEM    = "update product set is_favorite = 0 where id = $i"

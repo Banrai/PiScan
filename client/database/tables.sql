@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS product (
 	product_ind  integer DEFAULT 0, -- to distinguish multiple products with the same barcode
 	is_favorite  integer DEFAULT 0, -- 0 = false, 1 = true
 	is_edit      integer DEFAULT 0, -- 0 = false, 1 = true
-	posted       integer, -- unix time (i.e., the number of seconds since 1970-01-01 00:00:00 UTC)
+	posted       datetime DEFAULT (datetime('now','localtime')),
 	account      integer REFERENCES account(id)
 ); 
 
