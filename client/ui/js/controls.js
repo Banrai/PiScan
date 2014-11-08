@@ -13,6 +13,32 @@ function toggleActions () {
     }
 }
 
+function buyAmzUS (targetClass) {
+    var i, d, q; cartUrl = "", amzItems = {}, selectedItems = [];
+    $("input:hidden").each(function() {
+	if( $(this).attr("class") == targetClass ) {
+	    amzItems[ $(this).attr("name") ] = $(this).attr("value");
+	}
+    });
+    $(".chk_item").each(function() {
+	if( $(this).is(":checked") ) {
+	    var val = $(this).attr("value"),
+	       asin = amzItems[val];
+	    if( asin ) {
+		selectedItems.push(asin);
+	    }
+	}
+    });
+    for(i=0, d=selectedItems.length; i<d; i++) {
+	q = i+1;
+	if( i>0 ) { cartUrl += "&"; }
+	cartUrl += "ASIN."+q+"="+selectedItems[i]+"&Quantity."+q+"=1";
+    }
+    if( cartUrl.length > 0 ) {
+	location.href = "http://www.amazon.com/gp/aws/cart/add.html?" + cartUrl;
+    } // else: none of the selected items can be bought from amzUS
+}
+
 $(function(){
     $("#id_actions_chk").on("click", function() {
 	var state = $(this).is(':checked');
@@ -52,8 +78,12 @@ $(function(){
 	event.preventDefault();
 	if( anyItemChecked() ) {
 	    var target = $(this).attr('href');
-	    $('#bulkActions').attr('action', target);
-	    $("#bulkActions").submit();
+	    if( "/buyAMZN:us/" == target ) {
+		buyAmzUS("AMZN:us");
+	    } else {
+		$('#bulkActions').attr('action', target);
+		$("#bulkActions").submit();
+	    }
 	}
     });
 });

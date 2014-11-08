@@ -28,7 +28,9 @@
        <div class="barcode"><i class="fa fa-barcode"></i> {{$item.Barcode}}</div>
        <div class="timestamp">{{$item.Since}}</div>
 	   {{if $item.Desc}}
-	   {{range $pc := $item.ForSale}}{{$pc.ProductCode}}{{end}}
+	   {{range $pc := $item.ForSale}}
+	   <input type="hidden" class="{{$pc.Vendor.VendorId}}" name="{{$item.Id}}" value="{{$pc.ProductCode}}" />
+	   {{end}}
 	   {{end}}
       </div>
      </div>
