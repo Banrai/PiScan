@@ -9,8 +9,11 @@ import (
 	"fmt"
 	"github.com/mxk/go-sqlite/sqlite3"
 	"io/ioutil"
+	"math"
 	"path"
+	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -37,8 +40,8 @@ const (
 
 	// Products
 	ADD_ITEM           = "insert into product (barcode, product_desc, product_ind, account) values ($b, $d, $i, $a)"
-	GET_ITEMS          = "select id, barcode, product_desc, product_ind, posted from product where account = $a"
-	GET_FAVORITE_ITEMS = "select id, barcode, product_desc, product_ind, posted from product where is_favorite = 1 and account = $a"
+	GET_ITEMS          = "select id, barcode, product_desc, product_ind, strftime('%s', posted) from product where account = $a order by posted desc"
+	GET_FAVORITE_ITEMS = "select id, barcode, product_desc, product_ind, strftime('%s', posted) from product where is_favorite = 1 and account = $a order by posted desc"
 	DELETE_ITEM        = "delete from product where id = $i"
 	FAVORITE_ITEM      = "update product set is_favorite = 1 where id = $i"
 	UNFAVORITE_ITEM    = "update product set is_favorite = 0 where id = $i"
@@ -51,6 +54,11 @@ const (
 	GET_VENDOR_PRODUCT = "select v.vendor_id, pa.product_code from vendor v, product_availability pa where v.id = pa.vendor and pa.product = $i"
 )
 
+var (
+	INTERVALS   = []string{"year", "month", "day", "hour", "minute"}
+	SECONDS_PER = map[string]int64{"minute": 60, "hour": 3600, "day": 86400, "month": 2592000, "year": 31536000}
+)
+
 func getPK(db *sqlite3.Conn, table string) int64 {
 	// find and return the most recently-inserted
 	// primary key, based on the table name
@@ -61,6 +69,43 @@ func getPK(db *sqlite3.Conn, table string) int64 {
 		s.Scan(&rowid)
 	}
 	return rowid
+}
+
+func calculateTimeSince(posted string) string {
+	result := "just now" // default reply
+
+	// try to convert the posted string into unix time
+	i, err := strconv.ParseInt(posted, 10, 64)
+	if err == nil {
+		tm := time.Unix(i, 0)
+
+		// calculate the time since posted
+		// and return a human readable
+		// '[interval] ago' string
+		duration := time.Since(tm)
+		if duration.Seconds() < 60.0 {
+			if duration.Seconds() == 1.0 {
+				result = fmt.Sprintf("%2.0f second ago", duration.Seconds())
+			} else {
+				result = fmt.Sprintf("%2.0f seconds ago", duration.Seconds())
+			}
+		} else {
+			for _, interval := range INTERVALS {
+				v := math.Trunc(duration.Seconds() / float64(SECONDS_PER[interval]))
+				if v > 0.0 {
+					if v == 1.0 {
+						result = fmt.Sprintf("%2.0f %s ago", v, interval)
+					} else {
+						// plularize the interval label
+						result = fmt.Sprintf("%2.0f %ss ago", v, interval)
+					}
+					break
+				}
+			}
+		}
+	}
+
+	return result
 }
 
 type Item struct {
@@ -116,7 +161,7 @@ func fetchItems(db *sqlite3.Conn, a *Account, sql string) ([]*Item, error) {
 		barcode, barcodeFound := row["barcode"]
 		desc, descFound := row["product_desc"]
 		ind, indFound := row["product_ind"]
-		since, sinceFound := row["posted"]
+		since, sinceFound := row["strftime('%s', posted)"]
 		if barcodeFound {
 			result := new(Item)
 			result.Id = rowid
@@ -128,7 +173,7 @@ func fetchItems(db *sqlite3.Conn, a *Account, sql string) ([]*Item, error) {
 				result.Index = ind.(int64)
 			}
 			if sinceFound {
-				result.Since = since.(string)
+				result.Since = calculateTimeSince(since.(string))
 			}
 			results = append(results, result)
 		}
