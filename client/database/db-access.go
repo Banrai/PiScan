@@ -51,25 +51,13 @@ const (
 	ADD_VENDOR_PRODUCT = "insert into product_availability (vendor, product_code, product) values ($v, $p, $i)"
 	GET_VENDOR         = "select id, vendor_id, display_name from vendor where id = $i"
 	GET_VENDORS        = "select distinct id, vendor_id, display_name from vendor"
-	GET_VENDOR_PRODUCT = "select v.vendor_id, pa.product_code from vendor v, product_availability pa where v.id = pa.vendor and pa.product = $i"
+	GET_VENDOR_PRODUCT = "select pa.id, v.id, pa.product_code from vendor v, product_availability pa where v.id = pa.vendor and pa.product = $i"
 )
 
 var (
 	INTERVALS   = []string{"year", "month", "day", "hour", "minute"}
 	SECONDS_PER = map[string]int64{"minute": 60, "hour": 3600, "day": 86400, "month": 2592000, "year": 31536000}
 )
-
-func getPK(db *sqlite3.Conn, table string) int64 {
-	// find and return the most recently-inserted
-	// primary key, based on the table name
-	sql := fmt.Sprintf("select seq from sqlite_sequence where name='%s'", table)
-
-	var rowid int64
-	for s, err := db.Query(sql); err == nil; err = s.Next() {
-		s.Scan(&rowid)
-	}
-	return rowid
-}
 
 func calculateTimeSince(posted string) string {
 	result := "just now" // default reply
@@ -108,12 +96,49 @@ func calculateTimeSince(posted string) string {
 	return result
 }
 
+func getPK(db *sqlite3.Conn, table string) int64 {
+	// find and return the most recently-inserted
+	// primary key, based on the table name
+	sql := fmt.Sprintf("select seq from sqlite_sequence where name='%s'", table)
+
+	var rowid int64
+	for s, err := db.Query(sql); err == nil; err = s.Next() {
+		s.Scan(&rowid)
+	}
+	return rowid
+}
+
+type ConnCoordinates struct {
+	DBPath       string
+	DBFile       string
+	DBTablesPath string
+}
+
+type Account struct {
+	Id      int64
+	Email   string
+	APICode string
+}
+
+type Vendor struct {
+	Id          int64
+	VendorId    string
+	DisplayName string
+}
+
+type VendorProduct struct {
+	Id          int64
+	ProductCode string
+	Vendor      *Vendor
+}
+
 type Item struct {
 	Id      int64
 	Desc    string
 	Barcode string
 	Index   int64
 	Since   string
+	ForSale []*VendorProduct
 }
 
 func (i *Item) Add(db *sqlite3.Conn, a *Account) (int64, error) {
@@ -175,6 +200,7 @@ func fetchItems(db *sqlite3.Conn, a *Account, sql string) ([]*Item, error) {
 			if sinceFound {
 				result.Since = calculateTimeSince(since.(string))
 			}
+			result.ForSale = GetVendorProducts(db, rowid)
 			results = append(results, result)
 		}
 	}
@@ -199,12 +225,6 @@ func GetSingleItem(db *sqlite3.Conn, a *Account, id int64) (*Item, error) {
 		}
 	}
 	return item, err
-}
-
-type Vendor struct {
-	Id          int64
-	VendorId    string
-	DisplayName string
 }
 
 func AddVendor(db *sqlite3.Conn, vendorId, vendorDisplayName string) (int64, error) {
@@ -259,16 +279,27 @@ func GetAllVendors(db *sqlite3.Conn) []*Vendor {
 	return results
 }
 
-/*
-func GetVendorCode(db *sqlite3.Conn, itemId int64) string {
-	// apply the GET_VENDOR_PRODUCT query and return the result
-	// GET_VENDOR_PRODUCT = "select product_code from product_availability where product = $i"
-}*/
+func GetVendorProducts(db *sqlite3.Conn, itemId int64) []*VendorProduct {
+	results := make([]*VendorProduct, 0)
 
-type Account struct {
-	Id      int64
-	Email   string
-	APICode string
+	row := make(sqlite3.RowMap)
+	args := sqlite3.NamedArgs{"$i": itemId}
+	for s, err := db.Query(GET_VENDOR_PRODUCT, args); err == nil; err = s.Next() {
+		var rowid int64
+		s.Scan(&rowid, row)
+
+		vendorPk, vendorPkFound := row["id"]
+		productCode, productCodeFound := row["product_code"]
+		if vendorPkFound && productCodeFound {
+			result := new(VendorProduct)
+			result.Id = rowid
+			result.ProductCode = productCode.(string)
+			result.Vendor = GetVendor(db, vendorPk.(int64))
+			results = append(results, result)
+		}
+	}
+
+	return results
 }
 
 func (a *Account) Add(db *sqlite3.Conn) error {
@@ -356,12 +387,6 @@ func GetDesignatedAccount(db *sqlite3.Conn) (*Account, error) {
 		return FetchAnonymousAccount(db)
 	}
 	return accounts[0], listErr
-}
-
-type ConnCoordinates struct {
-	DBPath       string
-	DBFile       string
-	DBTablesPath string
 }
 
 func InitializeDB(coords ConnCoordinates) (*sqlite3.Conn, error) {

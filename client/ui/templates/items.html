@@ -27,6 +27,9 @@
        <div class="product product-{{if $item.Desc}}found{{else}}unknown{{end}}">{{if $item.Desc}}{{$item.Desc}}{{else}}<i class="fa fa-exclamation-triangle"></i> NOT FOUND <a href="/input/{{$item.Id}}"><i class="fa fa-pencil"></i></a>{{end}}</div>
        <div class="barcode"><i class="fa fa-barcode"></i> {{$item.Barcode}}</div>
        <div class="timestamp">{{$item.Since}}</div>
+	   {{if $item.Desc}}
+	   {{range $pc := $item.ForSale}}{{$pc.ProductCode}}{{end}}
+	   {{end}}
       </div>
      </div>
      {{end}}
