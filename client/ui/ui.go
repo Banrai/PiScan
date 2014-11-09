@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	ITEM_TEMPLATE_FILES = []string{"base.html", "navigation_tabs.html", "actions.html", "items.html"}
+	ITEM_TEMPLATE_FILES = []string{"base.html", "navigation_tabs.html", "actions.html", "items.html", "modal.html"}
 	TEMPLATE_LIST       = func(templatesFolder string, templateFiles []string) []string {
 		t := make([]string, 0)
 		for _, f := range templateFiles {

@@ -13,6 +13,13 @@ function toggleActions () {
     }
 }
 
+function showModal (title, header, message) {
+    $('#modalWindow').modal('show');
+    $('#modalTitle').text(title);
+    $('#modalMessageHeader').text(header);
+    $('#modalMessage').text(message);
+}
+
 function buyAmzUS (targetClass) {
     var i, d, q; cartUrl = "", amzItems = {}, selectedItems = [];
     $("input:hidden").each(function() {
@@ -36,7 +43,10 @@ function buyAmzUS (targetClass) {
     }
     if( cartUrl.length > 0 ) {
 	location.href = "http://www.amazon.com/gp/aws/cart/add.html?" + cartUrl;
-    } // else: none of the selected items can be bought from amzUS
+    } else {
+	// none of the selected items can be bought from amzUS
+	showModal("Sorry", "Unavailable", "None of the selected items can be purchased from Amazon (US)");
+    }
 }
 
 $(function(){
@@ -62,14 +72,14 @@ $(function(){
 		    if( d["msg"] && d["msg"] == "Ok" && !d["err"] ) {
 			$("#Item_"+itemId).remove();
 		    } else {
-			alert("Sorry, that item could not be deleted");
+			showModal("Sorry", "Error", "That item could not be deleted");
 		    }
                 },
                 error: function (d) {
 		    if( d["err"] ) {
-			alert(d["err"])
+			showModal("Sorry", "Error", d[err]);
 		    } else {
-			alert("Sorry, there was a problem deleting that item");
+			showModal("Sorry", "Error", "There was a problem deleting that item");
 		    }
 		}
 	       });
