@@ -37,7 +37,6 @@ func main() {
 	http.HandleFunc("/", ui.Redirect("/scanned/"))
 	http.HandleFunc("/scanned/", ui.MakeHTMLHandler(ui.ScannedItems, dbCoordinates))
 	http.HandleFunc("/favorites/", ui.MakeHTMLHandler(ui.FavoritedItems, dbCoordinates))
-	//http.HandleFunc("/buyAmazon/", makeHandler(ui.BuyFromAmazon, dbCoordinates))
 	http.HandleFunc("/delete/", ui.MakeHTMLHandler(ui.DeleteItems, dbCoordinates))
 	http.HandleFunc("/favorite/", ui.MakeHTMLHandler(ui.FavoriteItems, dbCoordinates))
 	http.HandleFunc("/unfavorite/", ui.MakeHTMLHandler(ui.UnfavoriteItems, dbCoordinates))
