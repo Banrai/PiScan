@@ -21,14 +21,14 @@ const (
 
 func main() {
 	var templatesFolder, dbPath, dbFile string
-	flag.StringVar(&templatesFolder, "templates", "", "Path to the html templates (required)")
+	flag.StringVar(&templatesFolder, "templates", "", "Path to the html templates (REQUIRED)")
 	flag.StringVar(&dbPath, "dbPath", database.SQLITE_PATH, fmt.Sprintf("Path to the sqlite file (defaults to '%s')", database.SQLITE_PATH))
 	flag.StringVar(&dbFile, "dbFile", database.SQLITE_FILE, fmt.Sprintf("The sqlite database file (defaults to '%s')", database.SQLITE_FILE))
 	flag.Parse()
 
 	// make sure the required parameters are passed when run
 	if templatesFolder == "" {
-		log.Println("WebApp usage:")
+		fmt.Println("WebApp usage:")
 		flag.PrintDefaults()
 	} else {
 		/* set the server ready for use */
