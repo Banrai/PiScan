@@ -1,0 +1,4 @@
+$(function(){
+    $("#prodName").focus();
+});
+

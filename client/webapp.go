@@ -39,15 +39,16 @@ func main() {
 		dbCoordinates := database.ConnCoordinates{DBPath: dbPath, DBFile: dbFile}
 
 		/* define the server handlers */
-		// dynamic request handlers
+		// dynamic request handlers: html
 		http.HandleFunc("/", ui.Redirect("/scanned/"))
 		http.HandleFunc("/scanned/", ui.MakeHTMLHandler(ui.ScannedItems, dbCoordinates))
 		http.HandleFunc("/favorites/", ui.MakeHTMLHandler(ui.FavoritedItems, dbCoordinates))
 		http.HandleFunc("/delete/", ui.MakeHTMLHandler(ui.DeleteItems, dbCoordinates))
 		http.HandleFunc("/favorite/", ui.MakeHTMLHandler(ui.FavoriteItems, dbCoordinates))
 		http.HandleFunc("/unfavorite/", ui.MakeHTMLHandler(ui.UnfavoriteItems, dbCoordinates))
+		http.HandleFunc("/input/", ui.MakeHTMLHandler(ui.InputUnknownItem, dbCoordinates))
+		// ajax
 		http.HandleFunc("/remove/", ui.MakeHandler(ui.RemoveSingleItem, dbCoordinates, MIME_JSON))
-		//http.HandleFunc("/input/", makeHandler(ui.InputItem, dbCoordinates))
 
 		// static resources
 		http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir(path.Join(templatesFolder, "../css/")))))

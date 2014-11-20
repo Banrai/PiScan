@@ -1,50 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+{{template "head.html" .}}
+ <body>
+  <div class="container-fluid">
+
+   {{template "navigation_tabs.html" .ActiveTab}}
+
    <!-- items (outer) -->
    <div class="row">
     <div class="col-xs-6 col-md-4"></div>
     <div class="clearfix visible-xs-block"></div>
     <div class="col-xs-6 col-sm-4">
-	
-	{{if .Items}}
-	 <form id="bulkActions" method="POST" action="">
-     <!-- options (for selected items) -->
-     <div class="row item-header">
-      <div class="col-xs-2 col-sm-1"><input id="id_actions_chk" type="checkbox" /></div>
-      <div class="col-xs-10 col-sm-7">
-       <!-- an alternative to <select> -->
-       <a class="dropdown-toggle category" data-toggle="dropdown" href="#" style="display:none" id="id_actions"><strong><i class="fa fa-caret-square-o-down"></i> Apply Action</strong></a>
-       <ul id="category" class="dropdown-menu">
-        {{template "actions.html" .Actions}}
-       </ul>
-      </div>
-     </div>
 
-     <!-- items (inner) -->
-     {{range $item := .Items}}
-     <!-- item -->
-     <div class="row item" id="Item_{{$item.Id}}">
-      <div class="col-xs-2 col-sm-1">{{if $item.Desc}}<input type="checkbox" class="chk_item" name="item" value="{{$item.Id}}" />{{else}}<a class="trash" href="#{{$item.Id}}"><i class="fa fa-trash-o"></i></a>{{end}}</div>
-      <div class="col-xs-10 col-sm-7">
-       <div class="product product-{{if $item.Desc}}found{{else}}unknown{{end}}">{{if $item.Desc}}{{$item.Desc}}{{else}}<i class="fa fa-exclamation-triangle"></i> NOT FOUND <a href="/input/{{$item.Id}}"><i class="fa fa-pencil"></i></a>{{end}}</div>
-       <div class="barcode"><i class="fa fa-barcode"></i> {{$item.Barcode}}</div>
-       <div class="timestamp">{{$item.Since}}</div>
-	   {{if $item.Desc}}
-	   {{range $pc := $item.ForSale}}
-	   <input type="hidden" class="{{$pc.Vendor.VendorId}}" name="{{$item.Id}}" value="{{$pc.ProductCode}}" />
-	   {{end}}
-	   {{end}}
-      </div>
-     </div>
-     {{end}}
-	</form>
-	{{else}}
-	<div class="row">
-	  <div class="col-xs-2 col-sm-1"></div>
-	  <div class="col-xs-10 col-sm-7 no-items">
-	    <h2><i class="fa fa-frown-o"></i> No {{if .Scanned}}Scanned{{else}}Favorite{{end}} Items</h2>
+      {{if .Items}}
+      <form id="bulkActions" method="POST" action="">
+	<!-- options (for selected items) -->
+	<div class="row item-header">
+	  <div class="col-xs-2 col-sm-1"><input id="id_actions_chk" type="checkbox" /></div>
+	  <div class="col-xs-10 col-sm-7">
+	    <a class="dropdown-toggle category" data-toggle="dropdown" href="#" style="display:none" id="id_actions"><strong><i class="fa fa-caret-square-o-down"></i> Apply Action</strong></a>
+	    <ul id="category" class="dropdown-menu">
+	      {{template "actions.html" .Actions}}
+	    </ul>
+	  </div>
+	</div>
+
+	<!-- items (inner) -->
+	{{range $item := .Items}}
+	<!-- item -->
+	<div class="row item" id="Item_{{$item.Id}}">
+	  <div class="col-xs-2 col-sm-1">{{if $item.Desc}}<input type="checkbox" class="chk_item" name="item" value="{{$item.Id}}" />{{else}}<a class="trash" href="#{{$item.Id}}"><i class="fa fa-trash-o"></i></a>{{end}}</div>
+	  <div class="col-xs-10 col-sm-7">
+	    <div class="product product-{{if $item.Desc}}found{{else}}unknown{{end}}">{{if $item.Desc}}{{$item.Desc}}{{else}}<i class="fa fa-exclamation-triangle"></i> NOT FOUND <a href="/input/{{$item.Id}}"><i class="fa fa-pencil"></i></a>{{end}}</div>
+	    <div class="barcode"><i class="fa fa-barcode"></i> {{$item.Barcode}}</div>
+	    <div class="timestamp">{{$item.Since}}</div>
+	    {{if $item.Desc}}
+	    {{range $pc := $item.ForSale}}
+	    <input type="hidden" class="{{$pc.Vendor.VendorId}}" name="{{$item.Id}}" value="{{$pc.ProductCode}}" />
+	    {{end}}
+	    {{end}}
 	  </div>
 	</div>
 	{{end}}
+      </form>
+      {{else}}
+      <div class="row">
+	<div class="col-xs-2 col-sm-1"></div>
+	<div class="col-xs-10 col-sm-7 no-items">
+	  <h2><i class="fa fa-frown-o"></i> No {{if .Scanned}}Scanned{{else}}Favorite{{end}} Items</h2>
+	</div>
+      </div>
+      {{end}}
 
     </div>
    </div>
    <!-- /items (outer) -->
+
+   {{template "modal.html"}}
+  </div>
+  <!-- /container -->
+
+{{template "scripts.html"}}
+  <script src="/js/controls.js"></script>
+ </body>
+</html>

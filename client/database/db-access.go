@@ -39,7 +39,8 @@ const (
 	UPDATE_ACCOUNT = "update account set email = $e, api_code = $a where id = $i"
 
 	// Products
-	ADD_ITEM           = "insert into product (barcode, product_desc, product_ind, account) values ($b, $d, $i, $a)"
+	ADD_ITEM           = "insert into product (barcode, product_desc, product_ind, is_edit, account) values ($b, $d, $i, $e, $a)"
+	UPDATE_ITEM        = "update product set product_desc = $d, product_ind = $n, is_edit = $e where id = $i"
 	GET_ITEMS          = "select id, barcode, product_desc, product_ind, strftime('%s', posted) from product where account = $a order by posted desc"
 	GET_FAVORITE_ITEMS = "select id, barcode, product_desc, product_ind, strftime('%s', posted) from product where is_favorite = 1 and account = $a order by posted desc"
 	DELETE_ITEM        = "delete from product where id = $i"
@@ -133,12 +134,13 @@ type VendorProduct struct {
 }
 
 type Item struct {
-	Id      int64
-	Desc    string
-	Barcode string
-	Index   int64
-	Since   string
-	ForSale []*VendorProduct
+	Id              int64
+	Desc            string
+	Barcode         string
+	Index           int64
+	Since           string
+	UserContributed bool
+	ForSale         []*VendorProduct
 }
 
 func (i *Item) Add(db *sqlite3.Conn, a *Account) (int64, error) {
@@ -146,6 +148,7 @@ func (i *Item) Add(db *sqlite3.Conn, a *Account) (int64, error) {
 	args := sqlite3.NamedArgs{"$b": i.Barcode,
 		"$d": i.Desc,
 		"$i": i.Index,
+		"$e": i.UserContributed,
 		"$a": a.Id}
 	result := db.Exec(ADD_ITEM, args)
 	if result == nil {
@@ -153,6 +156,15 @@ func (i *Item) Add(db *sqlite3.Conn, a *Account) (int64, error) {
 		return pk, result
 	}
 	return BAD_PK, result
+}
+
+func (i *Item) Update(db *sqlite3.Conn) error {
+	// update the Item with with user contribution (description)
+	args := sqlite3.NamedArgs{"$d": i.Desc,
+		"$n": i.Index,
+		"$e": i.UserContributed,
+		"$i": i.Id}
+	return db.Exec(UPDATE_ITEM, args)
 }
 
 func (i *Item) Delete(db *sqlite3.Conn) error {

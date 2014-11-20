@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+{{template "head.html" .}}
+ <body>
+  <div class="container-fluid">
+
+   <div class="row">
+    <div class="col-xs-6 col-md-4"></div>
+    <div class="clearfix visible-xs-block"></div>
+    <div class="col-xs-6 col-sm-4">
+      <h1><i class="fa fa-barcode"></i> {{.Item.Barcode}}</h1>
+
+      <form role="form" class="form-horizontal" action="/input/{{.Item.Id}}" method="POST">
+	<input type="hidden" name="item" value="{{.Item.Id}}">
+	<input type="hidden" name="barcode" value="{{.Item.Barcode}}">
+
+	<div class="form-group">
+	  <label for="prodName">Product</label>
+	  <input type="text" class="form-control" id="prodName" name="prodName" placeholder="Type the name of the product here">
+	</div>
+
+	<div class="form-group">
+	  <label for="prodDesc">Description (optional)</label>
+	  <input type="text" class="form-control" id="prodDesc" name="prodDesc" placeholder="Add a description">
+	</div>
+
+	<div class="form-group">
+	  <label for="brandName">Brand (optional)</label>
+	  <input type="text" class="form-control" id="brandName" name="brandName" placeholder="What is the brand?">
+	</div>
+
+	<div class="form-group">
+	  <label for="brandUrl">Brand Web Site (optional)</label>
+	  <input type="url" class="form-control" id="brandUrl" name="brandUrl" placeholder="What is the brand's web site address?">
+	</div>
+
+	<button type="submit" class="btn btn-primary"><i class="fa fa-check-square-o"></i> Save</button>
+	<a href="{{.CancelUrl}}" class="btn btn-danger" role="button"><i class="fa fa-times"></i> Cancel</a>
+      </form>
+
+    </div>
+   </div>
+
+  </div>
+  <!-- /container -->
+
+{{template "scripts.html"}}
+  <script src="/js/contribute.js"></script>
+ </body>
+</html>
+
+

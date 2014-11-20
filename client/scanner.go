@@ -126,9 +126,10 @@ func main() {
 						// convert the commerce.API struct into a database.Item
 						// so that it can be logged into the Pi client sqlite db
 						item := database.Item{
-							Index:   int64(i),
-							Barcode: barcode,
-							Desc:    product.ProductName}
+							Index:           int64(i),
+							Barcode:         barcode,
+							Desc:            product.ProductName,
+							UserContributed: false}
 						pk, insertErr := item.Add(db, acc)
 						if insertErr == nil {
 							// also log the vendor/product code combination

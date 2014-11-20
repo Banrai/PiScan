@@ -15,18 +15,29 @@ import (
 	"net/http"
 	"path"
 	"strconv"
+	"strings"
+)
+
+const (
+	BAD_REQUEST = "Sorry, we do not know how to respond to that request"
+	HOME_URL    = "/scanned/"
 )
 
 var (
-	ITEM_TEMPLATE_FILES = []string{"base.html", "navigation_tabs.html", "actions.html", "items.html", "modal.html"}
-	TEMPLATE_LIST       = func(templatesFolder string, templateFiles []string) []string {
+	TEMPLATE_LIST = func(templatesFolder string, templateFiles []string) []string {
 		t := make([]string, 0)
 		for _, f := range templateFiles {
 			t = append(t, path.Join(templatesFolder, f))
 		}
 		return t
 	}
-	ITEM_TEMPLATES        *template.Template
+
+	ITEM_LIST_TEMPLATE_FILES = []string{"items.html", "head.html", "navigation_tabs.html", "actions.html", "modal.html", "scripts.html"}
+	ITEM_EDIT_TEMPLATE_FILES = []string{"define_item.html", "head.html", "scripts.html"}
+
+	ITEM_LIST_TEMPLATES *template.Template
+	ITEM_EDIT_TEMPLATES *template.Template
+
 	TEMPLATES_INITIALIZED = false
 )
 
@@ -73,13 +84,18 @@ type Action struct {
 	Action string
 }
 
-type Page struct {
+type ItemsPage struct {
 	Title     string
 	ActiveTab *ActiveTab
 	Actions   []*Action
 	Items     []*database.Item
 	Scanned   bool
-	ShowItems bool
+}
+
+type ItemForm struct {
+	Title     string
+	Item      *database.Item
+	CancelUrl string
 }
 
 /* General db access functions */
@@ -150,14 +166,13 @@ func getItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoor
 		titleBuffer.WriteString("s")
 	}
 
-	p := &Page{Title: titleBuffer.String(),
-		ShowItems: true,
+	p := &ItemsPage{Title: titleBuffer.String(),
 		Scanned:   !favorites,
 		ActiveTab: &ActiveTab{Scanned: !favorites, Favorites: favorites, ShowTabs: true},
 		Actions:   actions,
 		Items:     items}
 
-	renderTemplate(w, p)
+	renderItemListTemplate(w, p)
 }
 
 // deleteItem attempts to lookup and remove the Item for the Account and
@@ -197,7 +212,7 @@ func processItems(w http.ResponseWriter, r *http.Request, dbCoords database.Conn
 	}
 
 	// get all the Items for this Account
-	// and store them in a map by their Id
+	// and store them in a map by their Idscanned/
 	items, itemsErr := database.GetItems(db, acc)
 	if itemsErr != nil {
 		http.Error(w, itemsErr.Error(), http.StatusInternalServerError)
@@ -230,16 +245,23 @@ func processItems(w http.ResponseWriter, r *http.Request, dbCoords database.Conn
 
 /* HTML Response Functions (via templates) */
 
-func renderTemplate(w http.ResponseWriter, p *Page) {
+func renderItemListTemplate(w http.ResponseWriter, p *ItemsPage) {
 	if TEMPLATES_INITIALIZED {
-		ITEM_TEMPLATES.Execute(w, p)
+		ITEM_LIST_TEMPLATES.Execute(w, p)
+	}
+}
+
+func renderItemEditTemplate(w http.ResponseWriter, f *ItemForm) {
+	if TEMPLATES_INITIALIZED {
+		ITEM_EDIT_TEMPLATES.Execute(w, f)
 	}
 }
 
 // InitializeTemplates confirms the given folder string leads to the html
 // template files, otherwise templates.Must() will complain
 func InitializeTemplates(folder string) {
-	ITEM_TEMPLATES = template.Must(template.ParseFiles(TEMPLATE_LIST(folder, ITEM_TEMPLATE_FILES)...))
+	ITEM_LIST_TEMPLATES = template.Must(template.ParseFiles(TEMPLATE_LIST(folder, ITEM_LIST_TEMPLATE_FILES)...))
+	ITEM_EDIT_TEMPLATES = template.Must(template.ParseFiles(TEMPLATE_LIST(folder, ITEM_EDIT_TEMPLATE_FILES)...))
 	TEMPLATES_INITIALIZED = true
 }
 
@@ -281,6 +303,88 @@ func UnfavoriteItems(w http.ResponseWriter, r *http.Request, dbCoords database.C
 		i.Unfavorite(db)
 	}
 	processItems(w, r, dbCoords, fav, "/favorites/")
+}
+
+func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates) {
+	// attempt to connect to the db
+	db, err := database.InitializeDB(dbCoords)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// get the Account for this request
+	acc, accErr := database.GetDesignatedAccount(db)
+	if accErr != nil {
+		http.Error(w, accErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// prepare the html page response
+	form := &ItemForm{Title: "Contribute Product Information", CancelUrl: HOME_URL}
+
+	//lookup the item from the request id
+	// and show the input form (if a GET)
+	// or process it (if a POST)
+	if "GET" == r.Method {
+		// derive the item id from the url path
+		urlPaths := strings.Split(r.URL.Path[1:], "/")
+		if len(urlPaths) >= 2 {
+			itemId, itemIdErr := strconv.ParseInt(urlPaths[1], 10, 64)
+			if itemIdErr != nil {
+				http.Error(w, itemIdErr.Error(), http.StatusInternalServerError)
+				return
+			}
+			item, itemErr := database.GetSingleItem(db, acc, itemId)
+			if itemErr != nil {
+				http.Error(w, itemErr.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			form.Item = item
+		}
+	} else if "POST" == r.Method {
+		// get the item id from the posted data
+		r.ParseForm()
+		idVal, idExists := r.PostForm["item"]
+		barcodeVal, barcodeExists := r.PostForm["barcode"]
+		prodNameVal, prodNameExists := r.PostForm["prodName"]
+		if idExists && barcodeExists && prodNameExists {
+			itemId, itemIdErr := strconv.ParseInt(idVal[0], 10, 64)
+			if itemIdErr != nil {
+				http.Error(w, itemIdErr.Error(), http.StatusInternalServerError)
+				return
+			}
+			item, itemErr := database.GetSingleItem(db, acc, itemId)
+			if itemErr != nil {
+				http.Error(w, itemErr.Error(), http.StatusInternalServerError)
+				return
+			}
+			// the hidden barcode value must match the retrieved item
+			if item.Barcode == barcodeVal[0] {
+				// update the item in the local client db
+				item.Desc = prodNameVal[0]
+				item.UserContributed = true
+				item.Update(db)
+
+				// also need to mark the contribution in the POD clone db (via API, ultimately)
+				// this is where to use the prodDesc, brandName, brandUrl post data
+
+				// return success
+				http.Redirect(w, r, HOME_URL, http.StatusFound)
+				return
+			} else {
+				http.Error(w, BAD_REQUEST, http.StatusInternalServerError)
+				return
+			}
+		} else {
+			http.Error(w, BAD_REQUEST, http.StatusInternalServerError)
+			return
+		}
+	}
+
+	renderItemEditTemplate(w, form)
 }
 
 /* Ajax Response Functions (as strings via MakeHandler) */
