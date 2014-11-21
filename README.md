@@ -6,6 +6,18 @@ This is a personal shopping and inventory-tracking device based on the [Raspberr
 
 ## Installation
 
+### Quickstart (for the impatient)
+
+   ```sh
+go get github.com/mxk/go-sqlite/sqlite3
+go get github.com/go-sql-driver/mysql
+go get github.com/Banrai/PiScan
+cd $GOPATH/src/github.com/Banrai/PiScan
+make all
+   ```
+
+### More detailed instructions
+
 1. [Client device](client/README.md) (Raspberry Pi + barcode scanner)
 
 2. [Server](server/README.md)
