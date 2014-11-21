@@ -16,11 +16,21 @@ import (
 )
 
 const (
+	// server constants
+	SERVER_HOST = ""
+	SERVER_PORT = 8080
+
+	// non-html mime types (ajax replies)
 	MIME_JSON = "application/json"
 )
 
 func main() {
-	var templatesFolder, dbPath, dbFile string
+	var (
+		host, templatesFolder, dbPath, dbFile string
+		port                                  int
+	)
+	flag.StringVar(&host, "host", SERVER_HOST, fmt.Sprintf("Host name or IP address for this server (defaults to '%s')", SERVER_HOST))
+	flag.IntVar(&port, "port", SERVER_PORT, fmt.Sprintf("Port addess for this server (defaults to '%d')", SERVER_PORT))
 	flag.StringVar(&templatesFolder, "templates", "", "Path to the html templates (REQUIRED)")
 	flag.StringVar(&dbPath, "dbPath", database.SQLITE_PATH, fmt.Sprintf("Path to the sqlite file (defaults to '%s')", database.SQLITE_PATH))
 	flag.StringVar(&dbFile, "dbFile", database.SQLITE_FILE, fmt.Sprintf("The sqlite database file (defaults to '%s')", database.SQLITE_FILE))
@@ -56,6 +66,6 @@ func main() {
 		http.Handle("/fonts/", http.StripPrefix("/fonts/", http.FileServer(http.Dir(path.Join(templatesFolder, "../fonts/")))))
 
 		/* start the server */
-		log.Fatal(http.ListenAndServe(":8080", nil))
+		log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil))
 	}
 }
