@@ -18,10 +18,12 @@ PI_TARGETS = PiScanner WebApp
 clients: $(PI_TARGETS)
 
 # Server binary
-# (coming soon)
+APIServer: $(SERVER)/main.go
+	go build -o $(SERVER)/APIServer $^
 
 # all components
-all: clients
+all: clients APIServer
 
 clean:
 	rm -f $(addprefix $(CLIENT)/, $(PI_TARGETS))
+	rm -f $(addprefix $(SERVER)/, APIServer)
