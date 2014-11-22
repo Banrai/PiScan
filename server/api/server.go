@@ -32,53 +32,6 @@ var (
 	DefaultServerReadTimeout = 30 // in seconds
 )
 
-/*
-func InitServerDatabase(dbCoords DBConnection) map[string]*sql.Stmt {
-	statements := map[string]*sql.Stmt{}
-
-	connection := fmt.Sprintf("%s:%s@tcp(%s:%d)/product_open_data", dbCoords.User, dbCoords.Pass, dbCoords.Host, dbCoords.Port)
-	db, err := sql.Open("mysql", connection)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	gtin, err := db.Prepare(barcodes.GTIN_LOOKUP)
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		statements[barcodes.GTIN_LOOKUP] = gtin
-	}
-	defer gtin.Close()
-
-	brand, err := db.Prepare(barcodes.BRAND_LOOKUP)
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		statements[barcodes.BRAND_LOOKUP] = brand
-	}
-	defer brand.Close()
-
-	asinLookup, err := db.Prepare(barcodes.ASIN_LOOKUP)
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		statements[barcodes.ASIN_LOOKUP] = asinLookup
-	}
-	defer asinLookup.Close()
-
-	asinInsert, err := db.Prepare(barcodes.ASIN_INSERT)
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		statements[barcodes.ASIN_INSERT] = asinInsert
-	}
-	defer asinInsert.Close()
-
-	return statements
-}
-*/
-
 func WithServerDatabase(dbCoords DBConnection, fn func(map[string]*sql.Stmt)) {
 	statements := map[string]*sql.Stmt{}
 

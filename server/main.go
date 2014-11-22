@@ -28,7 +28,6 @@ const (
 	barcodeDBPort   = 3306
 )
 
-/*
 // Lookup the barcode, using both the barcodes database, and the Amazon API
 func lookupBarcode(r *http.Request, db api.DBConnection) string {
 	// the result is a json representation of the list of found products
@@ -40,39 +39,6 @@ func lookupBarcode(r *http.Request, db api.DBConnection) string {
 
 		barcodeVal, barcodeExists := r.PostForm["barcode"]
 		if barcodeExists {
-			statements := api.InitServerDatabase(db)
-			asinLookup, asinLookupExists := statements[barcodes.ASIN_LOOKUP]
-			asinInsert, asinInsertExists := statements[barcodes.ASIN_INSERT]
-			if asinLookupExists && asinInsertExists {
-				prods, prodErr := amazon.Lookup(strings.Join(barcodeVal, ""), asinLookup, asinInsert)
-				if prodErr == nil {
-					for _, prod := range prods {
-						products = append(products, prod)
-					}
-				}
-			}
-		}
-	}
-
-	result, err := json.Marshal(products)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return string(result)
-}
-*/
-
-func lookupBarcode(r *http.Request, db api.DBConnection) string {
-	// the result is a json representation of the list of found products
-	products := make([]*commerce.API, 0)
-
-	// this function only responds to POST requests
-	if "POST" == r.Method {
-		r.ParseForm()
-
-		barcodeVal, barcodeExists := r.PostForm["barcode"]
-		if barcodeExists {
-			//statements := api.InitServerDatabase(db)
 			queryFn := func(statements map[string]*sql.Stmt) {
 				asinLookup, asinLookupExists := statements[barcodes.ASIN_LOOKUP]
 				asinInsert, asinInsertExists := statements[barcodes.ASIN_INSERT]
