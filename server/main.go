@@ -70,7 +70,7 @@ func main() {
 	flag.StringVar(&dbHost, "dbHost", barcodeDBServer, fmt.Sprintf("The barcodes database server (defaults to '%s')", barcodeDBServer))
 	flag.IntVar(&dbPort, "dbPort", barcodeDBPort, fmt.Sprintf("The barcodes database port (defaults to '%d')", barcodeDBPort))
 	flag.StringVar(&host, "host", apiServer, fmt.Sprintf("The hostname or IP address of the API server (defaults to '%s')", apiServer))
-	flag.IntVar(&port, "port", port, fmt.Sprintf("The API server port (defaults to '%d')", port))
+	flag.IntVar(&port, "port", apiPort, fmt.Sprintf("The API server port (defaults to '%d')", apiPort))
 	flag.Parse()
 
 	handlers := map[string]func(http.ResponseWriter, *http.Request){}
