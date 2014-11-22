@@ -73,10 +73,12 @@ func main() {
 	flag.IntVar(&port, "port", apiPort, fmt.Sprintf("The API server port (defaults to '%d')", apiPort))
 	flag.Parse()
 
+	coords := api.DBConnection{Host: dbHost, User: dbUser, Pass: dbPass, Port: dbPort}
+
 	handlers := map[string]func(http.ResponseWriter, *http.Request){}
 	handlers["/lookup"] = func(w http.ResponseWriter, r *http.Request) {
 		lookup := func(w http.ResponseWriter, r *http.Request) string {
-			statements := api.InitServerDatabase(dbUser, dbPass, dbHost, dbPort)
+			statements := api.InitServerDatabase(coords)
 			return lookupBarcode(r, statements)
 		}
 		api.Respond("application/json", "utf-8", lookup)(w, r)

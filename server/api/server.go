@@ -20,15 +20,22 @@ type Server struct {
 	Logger *log.Logger
 }
 
+type DBConnection struct {
+	Host string
+	User string
+	Pass string
+	Port int
+}
+
 var (
 	Srv                      *Server
 	DefaultServerReadTimeout = 30 // in seconds
 )
 
-func InitServerDatabase(dbUser, dbPass, dbHost string, dbPort int) map[string]*sql.Stmt {
+func InitServerDatabase(dbCoords DBConnection) map[string]*sql.Stmt {
 	statements := map[string]*sql.Stmt{}
 
-	connection := fmt.Sprintf("%s:%s@tcp(%s:%d)/product_open_data", dbUser, dbPass, dbHost, dbPort)
+	connection := fmt.Sprintf("%s:%s@tcp(%s:%d)/product_open_data", dbCoords.User, dbCoords.Pass, dbCoords.Host, dbCoords.Port)
 	db, err := sql.Open("mysql", connection)
 	if err != nil {
 		log.Fatal(err)
