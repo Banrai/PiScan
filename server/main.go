@@ -4,7 +4,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -29,7 +28,8 @@ const (
 )
 
 // Lookup the barcode, using both the barcodes database, and the Amazon API
-func lookupBarcode(r *http.Request, statements map[string]*sql.Stmt) string {
+//func lookupBarcode(r *http.Request, statements map[string]*sql.Stmt) string {
+func lookupBarcode(r *http.Request, db api.DBConnection) string {
 	// the result is a json representation of the list of found products
 	products := make([]*commerce.API, 0)
 
@@ -39,6 +39,7 @@ func lookupBarcode(r *http.Request, statements map[string]*sql.Stmt) string {
 
 		barcodeVal, barcodeExists := r.PostForm["barcode"]
 		if barcodeExists {
+			statements := api.InitServerDatabase(db)
 			asinLookup, asinLookupExists := statements[barcodes.ASIN_LOOKUP]
 			asinInsert, asinInsertExists := statements[barcodes.ASIN_INSERT]
 			if asinLookupExists && asinInsertExists {
@@ -78,8 +79,7 @@ func main() {
 	handlers := map[string]func(http.ResponseWriter, *http.Request){}
 	handlers["/lookup"] = func(w http.ResponseWriter, r *http.Request) {
 		lookup := func(w http.ResponseWriter, r *http.Request) string {
-			statements := api.InitServerDatabase(coords)
-			return lookupBarcode(r, statements)
+			return lookupBarcode(r, coords)
 		}
 		api.Respond("application/json", "utf-8", lookup)(w, r)
 	}
