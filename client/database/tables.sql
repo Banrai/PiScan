@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS product (
 	is_favorite  integer DEFAULT 0, -- 0 = false, 1 = true
 	is_edit      integer DEFAULT 0, -- 0 = false, 1 = true
 	posted       datetime DEFAULT (datetime('now')),
-	account      integer REFERENCES account(id)
+	account      integer REFERENCES account(id),
+	UNIQUE(barcode, product_desc)
 ); 
 
 -- `vendor` defines the list of commercial vendors for products.

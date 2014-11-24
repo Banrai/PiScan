@@ -41,6 +41,7 @@ const (
 	// Products
 	ADD_ITEM           = "insert into product (barcode, product_desc, product_ind, is_edit, account) values ($b, $d, $i, $e, $a)"
 	UPDATE_ITEM        = "update product set product_desc = $d, product_ind = $n, is_edit = $e where id = $i"
+	GET_EXISTING_ITEM  = "select id from product where barcode = $b and product_desc = $d"
 	GET_ITEMS          = "select id, barcode, product_desc, product_ind, strftime('%s', posted) from product where account = $a order by posted desc"
 	GET_FAVORITE_ITEMS = "select id, barcode, product_desc, product_ind, strftime('%s', posted) from product where is_favorite = 1 and account = $a order by posted desc"
 	DELETE_ITEM        = "delete from product where id = $i"
@@ -143,8 +144,30 @@ type Item struct {
 	ForSale         []*VendorProduct
 }
 
+func getExistingItem(db *sqlite3.Conn, barcode, desc string) int64 {
+	// lookup the barcode and product desc
+	// combination and return the primary key,
+	// if the product has already been saved
+
+	args := sqlite3.NamedArgs{"$b": barcode, "$d": desc}
+
+	var rowid int64
+	rowid = BAD_PK
+	for s, err := db.Query(GET_EXISTING_ITEM, args); err == nil; err = s.Next() {
+		s.Scan(&rowid)
+	}
+	return rowid
+}
+
 func (i *Item) Add(db *sqlite3.Conn, a *Account) (int64, error) {
 	// insert the Item object
+
+	// but first check if it's a duplicate or not
+	itemPk := getExistingItem(db, i.Barcode, i.Desc)
+	if itemPk != BAD_PK {
+		return itemPk, nil
+	}
+
 	args := sqlite3.NamedArgs{"$b": i.Barcode,
 		"$d": i.Desc,
 		"$i": i.Index,
@@ -155,6 +178,7 @@ func (i *Item) Add(db *sqlite3.Conn, a *Account) (int64, error) {
 		pk := getPK(db, "product")
 		return pk, result
 	}
+
 	return BAD_PK, result
 }
 
