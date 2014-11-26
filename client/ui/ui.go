@@ -341,7 +341,7 @@ func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.
 			if itemIdErr == nil {
 				item, itemErr := database.GetSingleItem(db, acc, itemId)
 				if itemErr == nil {
-					if item.Id != database.BAD_PK {
+					if item.Id != database.BAD_PK && item.Desc == "" {
 						// requested item has been found and is valid
 						form.Item = item
 					}
