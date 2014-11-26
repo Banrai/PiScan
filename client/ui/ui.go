@@ -305,6 +305,9 @@ func UnfavoriteItems(w http.ResponseWriter, r *http.Request, dbCoords database.C
 	processItems(w, r, dbCoords, fav, "/favorites/")
 }
 
+// InputUnknownItem handles the form for user contributions of unknown
+// barcode scans: a GET presents the form, and a POST responds to the
+// user-contributed input
 func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates) {
 	// attempt to connect to the db
 	db, err := database.InitializeDB(dbCoords)

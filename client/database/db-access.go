@@ -7,6 +7,7 @@ package database
 
 import (
 	"fmt"
+	"github.com/Banrai/PiScan/server/database/barcodes"
 	"github.com/mxk/go-sqlite/sqlite3"
 	"io/ioutil"
 	"math"
@@ -27,9 +28,8 @@ const (
 	// Execution constants
 	BAD_PK = -1
 
-	// Anonymous Account
-	ANONYMOUS_EMAIL    = "anonymous@example.org"
-	ANONYMOUS_API_CODE = "12345678-abcd-9ef0-1234-567890abcdef"
+	// Default Account (for those who don't want to register)
+	ANONYMOUS_EMAIL = "anonymous@example.org"
 
 	// Prepared Statements
 	// User accounts
@@ -152,7 +152,7 @@ func getExistingItem(db *sqlite3.Conn, barcode, desc string) int64 {
 	args := sqlite3.NamedArgs{"$b": barcode, "$d": desc}
 
 	var rowid int64
-	rowid = BAD_PK
+	rowid = BAD_PK // default value, in case no match
 	for s, err := db.Query(GET_EXISTING_ITEM, args); err == nil; err = s.Next() {
 		s.Scan(&rowid)
 	}
@@ -395,15 +395,17 @@ func GetAllAccounts(db *sqlite3.Conn) ([]*Account, error) {
 	return results, nil
 }
 
-func FetchAnonymousAccount(db *sqlite3.Conn) (*Account, error) {
-	// return the existing Anonymous account
+// FetchOrCreateDefaultAccount returns the existing local client account
+// (in single-user mode), or creates it, if it does not exist yet
+func FetchOrCreateDefaultAccount(db *sqlite3.Conn) (*Account, error) {
+	// return the existing local client account
 	anon, anonErr := GetAccount(db, ANONYMOUS_EMAIL)
 
 	// or create it, if it does not exist yet
-	if anon.Email == "" && anon.APICode == "" {
+	if anon.Email == "" && anonErr == nil {
 		anon = new(Account)
 		anon.Email = ANONYMOUS_EMAIL
-		anon.APICode = ANONYMOUS_API_CODE
+		anon.APICode = barcodes.GenerateUUID(barcodes.UndashedUUID)
 		anonErr = anon.Add(db)
 		if anonErr == nil {
 			// make sure the Id value is correct
@@ -420,7 +422,7 @@ func FetchAnonymousAccount(db *sqlite3.Conn) (*Account, error) {
 func GetDesignatedAccount(db *sqlite3.Conn) (*Account, error) {
 	accounts, listErr := GetAllAccounts(db)
 	if len(accounts) == 0 {
-		return FetchAnonymousAccount(db)
+		return FetchOrCreateDefaultAccount(db)
 	}
 	return accounts[0], listErr
 }
