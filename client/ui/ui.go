@@ -19,7 +19,8 @@ import (
 )
 
 const (
-	BAD_REQUEST = "Sorry, we do not know how to respond to that request"
+	BAD_REQUEST = "Sorry, that is an invalid request"
+	BAD_POST    = "Sorry, we cannot respond to that request. Please try again."
 	HOME_URL    = "/scanned/"
 )
 
@@ -93,9 +94,11 @@ type ItemsPage struct {
 }
 
 type ItemForm struct {
-	Title     string
-	Item      *database.Item
-	CancelUrl string
+	Title       string
+	Item        *database.Item
+	CancelUrl   string
+	FormError   string
+	FormMessage string
 }
 
 /* General db access functions */
@@ -336,16 +339,16 @@ func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.
 		if len(urlPaths) >= 2 {
 			itemId, itemIdErr := strconv.ParseInt(urlPaths[1], 10, 64)
 			if itemIdErr != nil {
-				http.Error(w, itemIdErr.Error(), http.StatusInternalServerError)
-				return
+				form.FormError = itemIdErr.Error()
+			} else {
+				item, itemErr := database.GetSingleItem(db, acc, itemId)
+				if itemErr != nil {
+					form.FormError = itemErr.Error()
+				} else {
+					// requested item has been found and is valid
+					form.Item = item
+				}
 			}
-			item, itemErr := database.GetSingleItem(db, acc, itemId)
-			if itemErr != nil {
-				http.Error(w, itemErr.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			form.Item = item
 		}
 	} else if "POST" == r.Method {
 		// get the item id from the posted data
@@ -356,34 +359,34 @@ func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.
 		if idExists && barcodeExists && prodNameExists {
 			itemId, itemIdErr := strconv.ParseInt(idVal[0], 10, 64)
 			if itemIdErr != nil {
-				http.Error(w, itemIdErr.Error(), http.StatusInternalServerError)
-				return
-			}
-			item, itemErr := database.GetSingleItem(db, acc, itemId)
-			if itemErr != nil {
-				http.Error(w, itemErr.Error(), http.StatusInternalServerError)
-				return
-			}
-			// the hidden barcode value must match the retrieved item
-			if item.Barcode == barcodeVal[0] {
-				// update the item in the local client db
-				item.Desc = prodNameVal[0]
-				item.UserContributed = true
-				item.Update(db)
-
-				// also need to mark the contribution in the POD clone db (via API, ultimately)
-				// this is where to use the prodDesc, brandName, brandUrl post data
-
-				// return success
-				http.Redirect(w, r, HOME_URL, http.StatusFound)
-				return
+				form.FormError = itemIdErr.Error()
 			} else {
-				http.Error(w, BAD_REQUEST, http.StatusInternalServerError)
-				return
+				item, itemErr := database.GetSingleItem(db, acc, itemId)
+				if itemErr != nil {
+					form.FormError = itemErr.Error()
+				} else {
+					// the hidden barcode value must match the retrieved item
+					if item.Barcode == barcodeVal[0] {
+						// update the item in the local client db
+						item.Desc = prodNameVal[0]
+						item.UserContributed = true
+						item.Update(db)
+
+						// also need to mark the contribution in the POD clone db (via API, ultimately)
+						// this is where to use the prodDesc, brandName, brandUrl post data
+
+						// return success
+						http.Redirect(w, r, HOME_URL, http.StatusFound)
+						return
+					} else {
+						// bad form post: the hidden barcode value does not match the retrieved item
+						form.FormError = BAD_POST
+					}
+				}
 			}
 		} else {
-			http.Error(w, BAD_REQUEST, http.StatusInternalServerError)
-			return
+			// required form parameters are missing
+			form.FormError = BAD_POST
 		}
 	}
 
@@ -439,10 +442,10 @@ func RemoveSingleItem(r *http.Request, dbCoords database.ConnCoordinates) string
 					ack.Error = "Missing item id"
 				}
 			} else {
-				ack.Error = "Bad POST data"
+				ack.Error = BAD_POST
 			}
 		} else {
-			ack.Error = "Bad Request"
+			ack.Error = BAD_REQUEST
 		}
 	}
 
