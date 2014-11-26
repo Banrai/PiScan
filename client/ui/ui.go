@@ -94,11 +94,12 @@ type ItemsPage struct {
 }
 
 type ItemForm struct {
-	Title       string
-	Item        *database.Item
-	CancelUrl   string
-	FormError   string
-	FormMessage string
+	Title        string
+	Item         *database.Item
+	CancelUrl    string
+	FormError    string
+	FormMessage  string
+	Unregistered bool
 }
 
 /* General db access functions */
@@ -328,7 +329,9 @@ func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.
 	}
 
 	// prepare the html page response
-	form := &ItemForm{Title: "Contribute Product Information", CancelUrl: HOME_URL}
+	form := &ItemForm{Title: "Contribute Product Information",
+		CancelUrl:    HOME_URL,
+		Unregistered: (acc.Email == database.ANONYMOUS_EMAIL)}
 
 	//lookup the item from the request id
 	// and show the input form (if a GET)
