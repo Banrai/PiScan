@@ -338,18 +338,23 @@ func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.
 		urlPaths := strings.Split(r.URL.Path[1:], "/")
 		if len(urlPaths) >= 2 {
 			itemId, itemIdErr := strconv.ParseInt(urlPaths[1], 10, 64)
-			if itemIdErr != nil {
-				form.FormError = itemIdErr.Error()
-			} else {
+			if itemIdErr == nil {
 				item, itemErr := database.GetSingleItem(db, acc, itemId)
-				if itemErr != nil {
-					form.FormError = itemErr.Error()
-				} else {
-					// requested item has been found and is valid
-					form.Item = item
+				if itemErr == nil {
+					if item.Id != database.BAD_PK {
+						// requested item has been found and is valid
+						form.Item = item
+					}
 				}
 			}
 		}
+
+		if form.Item == nil {
+			// no matching item was found
+			http.Error(w, BAD_REQUEST, http.StatusInternalServerError)
+			return
+		}
+
 	} else if "POST" == r.Method {
 		// get the item id from the posted data
 		r.ParseForm()

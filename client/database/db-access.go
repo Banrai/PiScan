@@ -254,6 +254,7 @@ func GetFavoriteItems(db *sqlite3.Conn, a *Account) ([]*Item, error) {
 
 func GetSingleItem(db *sqlite3.Conn, a *Account, id int64) (*Item, error) {
 	item := new(Item)
+	item.Id = BAD_PK // if not found
 	items, err := GetItems(db, a)
 	for _, i := range items {
 		if i.Id == id {
