@@ -22,6 +22,7 @@ const (
 	BAD_REQUEST = "Sorry, that is an invalid request"
 	BAD_POST    = "Sorry, we cannot respond to that request. Please try again."
 	HOME_URL    = "/scanned/"
+	ACCOUNT_URL = "/account/"
 )
 
 var (
@@ -35,7 +36,7 @@ var (
 
 	ITEM_LIST_TEMPLATE_FILES    = []string{"items.html", "head.html", "navigation_tabs.html", "actions.html", "modal.html", "scripts.html"}
 	ITEM_EDIT_TEMPLATE_FILES    = []string{"define_item.html", "head.html", "scripts.html"}
-	ACCOUNT_EDIT_TEMPLATE_FILES = []string{"account.html", "head.html", "scripts.html"}
+	ACCOUNT_EDIT_TEMPLATE_FILES = []string{"account.html", "head.html", "navigation_tabs.html", "scripts.html"}
 
 	ITEM_LIST_TEMPLATES    *template.Template
 	ITEM_EDIT_TEMPLATES    *template.Template
@@ -78,6 +79,7 @@ type AjaxAck struct {
 type ActiveTab struct {
 	Scanned   bool
 	Favorites bool
+	Account   bool
 	ShowTabs  bool
 }
 
@@ -106,6 +108,7 @@ type ItemForm struct {
 
 type AccountForm struct {
 	Title        string
+	ActiveTab    *ActiveTab
 	Account      *database.Account
 	CancelUrl    string
 	FormError    string
@@ -182,7 +185,7 @@ func getItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoor
 
 	p := &ItemsPage{Title: titleBuffer.String(),
 		Scanned:   !favorites,
-		ActiveTab: &ActiveTab{Scanned: !favorites, Favorites: favorites, ShowTabs: true},
+		ActiveTab: &ActiveTab{Scanned: !favorites, Favorites: favorites, Account: false, ShowTabs: true},
 		Actions:   actions,
 		Items:     items}
 
@@ -435,10 +438,17 @@ func EditAccount(w http.ResponseWriter, r *http.Request, dbCoords database.ConnC
 	}
 
 	// prepare the html page response
+	regStatus := (acc.Email == database.ANONYMOUS_EMAIL)
+	cancelUrl := HOME_URL
+	if !regStatus {
+		cancelUrl = ACCOUNT_URL
+	}
+
 	form := &AccountForm{Title: "My Account",
+		ActiveTab:    &ActiveTab{Scanned: false, Favorites: false, Account: true, ShowTabs: true},
 		Account:      acc,
-		CancelUrl:    HOME_URL,
-		Unregistered: (acc.Email == database.ANONYMOUS_EMAIL)}
+		CancelUrl:    cancelUrl,
+		Unregistered: regStatus}
 
 	if "POST" == r.Method {
 		form.FormError = BAD_POST // in event of problems
@@ -461,7 +471,7 @@ func EditAccount(w http.ResponseWriter, r *http.Request, dbCoords database.ConnC
 					// have the server send an email for verification
 
 					// return success
-					http.Redirect(w, r, HOME_URL, http.StatusFound)
+					http.Redirect(w, r, ACCOUNT_URL, http.StatusFound)
 					return
 				}
 			}

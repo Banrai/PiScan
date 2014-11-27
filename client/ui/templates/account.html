@@ -4,11 +4,13 @@
  <body>
   <div class="container-fluid">
 
+   {{template "navigation_tabs.html" .ActiveTab}}
+
    <div class="row">
     <div class="col-xs-6 col-md-4"></div>
     <div class="clearfix visible-xs-block"></div>
     <div class="col-xs-6 col-sm-4">
-      <h1><i class="fa fa-user"></i> My Account</h1>
+      <div>&nbsp;</div>
 
       <div class="alert alert-{{if .Unregistered}}warning{{else}}info{{end}}" role="alert">
 	{{if .Unregistered}}
