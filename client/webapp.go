@@ -57,6 +57,7 @@ func main() {
 		http.HandleFunc("/favorite/", ui.MakeHTMLHandler(ui.FavoriteItems, dbCoordinates))
 		http.HandleFunc("/unfavorite/", ui.MakeHTMLHandler(ui.UnfavoriteItems, dbCoordinates))
 		http.HandleFunc("/input/", ui.MakeHTMLHandler(ui.InputUnknownItem, dbCoordinates))
+		http.HandleFunc("/account/", ui.MakeHTMLHandler(ui.EditAccount, dbCoordinates))
 		// ajax
 		http.HandleFunc("/remove/", ui.MakeHandler(ui.RemoveSingleItem, dbCoordinates, MIME_JSON))
 

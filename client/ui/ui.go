@@ -33,11 +33,13 @@ var (
 		return t
 	}
 
-	ITEM_LIST_TEMPLATE_FILES = []string{"items.html", "head.html", "navigation_tabs.html", "actions.html", "modal.html", "scripts.html"}
-	ITEM_EDIT_TEMPLATE_FILES = []string{"define_item.html", "head.html", "scripts.html"}
+	ITEM_LIST_TEMPLATE_FILES    = []string{"items.html", "head.html", "navigation_tabs.html", "actions.html", "modal.html", "scripts.html"}
+	ITEM_EDIT_TEMPLATE_FILES    = []string{"define_item.html", "head.html", "scripts.html"}
+	ACCOUNT_EDIT_TEMPLATE_FILES = []string{"account.html", "head.html", "scripts.html"}
 
-	ITEM_LIST_TEMPLATES *template.Template
-	ITEM_EDIT_TEMPLATES *template.Template
+	ITEM_LIST_TEMPLATES    *template.Template
+	ITEM_EDIT_TEMPLATES    *template.Template
+	ACCOUNT_EDIT_TEMPLATES *template.Template
 
 	TEMPLATES_INITIALIZED = false
 )
@@ -99,6 +101,14 @@ type ItemForm struct {
 	CancelUrl    string
 	FormError    string
 	FormMessage  string
+	Unregistered bool
+}
+
+type AccountForm struct {
+	Title        string
+	Account      *database.Account
+	CancelUrl    string
+	FormError    string
 	Unregistered bool
 }
 
@@ -261,11 +271,18 @@ func renderItemEditTemplate(w http.ResponseWriter, f *ItemForm) {
 	}
 }
 
+func renderAccountEditTemplate(w http.ResponseWriter, a *AccountForm) {
+	if TEMPLATES_INITIALIZED {
+		ACCOUNT_EDIT_TEMPLATES.Execute(w, a)
+	}
+}
+
 // InitializeTemplates confirms the given folder string leads to the html
 // template files, otherwise templates.Must() will complain
 func InitializeTemplates(folder string) {
 	ITEM_LIST_TEMPLATES = template.Must(template.ParseFiles(TEMPLATE_LIST(folder, ITEM_LIST_TEMPLATE_FILES)...))
 	ITEM_EDIT_TEMPLATES = template.Must(template.ParseFiles(TEMPLATE_LIST(folder, ITEM_EDIT_TEMPLATE_FILES)...))
+	ACCOUNT_EDIT_TEMPLATES = template.Must(template.ParseFiles(TEMPLATE_LIST(folder, ACCOUNT_EDIT_TEMPLATE_FILES)...))
 	TEMPLATES_INITIALIZED = true
 }
 
@@ -399,6 +416,59 @@ func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.
 	}
 
 	renderItemEditTemplate(w, form)
+}
+
+func EditAccount(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates) {
+	// attempt to connect to the db
+	db, err := database.InitializeDB(dbCoords)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// get the Account for this request
+	acc, accErr := database.GetDesignatedAccount(db)
+	if accErr != nil {
+		http.Error(w, accErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// prepare the html page response
+	form := &AccountForm{Title: "My Account",
+		Account:      acc,
+		CancelUrl:    HOME_URL,
+		Unregistered: (acc.Email == database.ANONYMOUS_EMAIL)}
+
+	if "POST" == r.Method {
+		form.FormError = BAD_POST // in event of problems
+
+		// get the item id from the posted data
+		r.ParseForm()
+		accVal, accExists := r.PostForm["account"]
+		emailVal, emailExists := r.PostForm["accountEmail"]
+		if accExists && emailExists {
+			// make sure the hidden account id value matches the Account
+			accId, accIdErr := strconv.ParseInt(accVal[0], 10, 64)
+			if accIdErr != nil {
+				form.FormError = accIdErr.Error()
+			} else {
+				if acc.Id == accId {
+					// update the account email address in the local client db
+					acc.Update(db, emailVal[0], acc.APICode)
+
+					// also need to ping the server with the api code and
+					// have the server send an email for verification
+
+					// return success
+					http.Redirect(w, r, HOME_URL, http.StatusFound)
+					return
+				}
+			}
+		}
+	}
+
+	renderAccountEditTemplate(w, form)
 }
 
 /* Ajax Response Functions (as strings via MakeHandler) */

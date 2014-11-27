@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+{{template "head.html" .}}
+ <body>
+  <div class="container-fluid">
+
+   <div class="row">
+    <div class="col-xs-6 col-md-4"></div>
+    <div class="clearfix visible-xs-block"></div>
+    <div class="col-xs-6 col-sm-4">
+      <h1><i class="fa fa-user"></i> My Account</h1>
+
+      <div class="alert alert-{{if .Unregistered}}warning{{else}}info{{end}}" role="alert">
+	{{if .Unregistered}}
+	<span class="fa-stack">
+	  <i class="fa fa-envelope-o fa-stack-1x"></i>
+	  <i class="fa fa-ban fa-stack-2x"></i>
+	</span>
+	Your email address is unregistered
+	<div style="font-size:0.9em;font-style:italic;padding-top:0.5em">Registration is optional, but it enables sharing your contributed product data with others</div>
+	{{else}}
+	<i class="fa fa-info-circle"></i>
+	Registered Email Address: <strong>{{.Account.Email}}</strong> 
+	<div class="pull-right" style="text-align:right"><a class="update" href="#accountForm">change</a></div>
+	{{end}}
+      </div>
+
+      {{if .FormError}}<div class="alert alert-danger" role="alert"><i class="fa fa-exclamation-triangle"></i> {{.FormError}}</div>{{end}}
+
+      <form id="accountForm" role="form" class="form-horizontal" action="/account/{{.Account.Id}}" method="POST"{{if .Unregistered}}{{else}} style="display:none"{{end}}>
+	<input type="hidden" name="account" value="{{.Account.Id}}">
+
+	<div class="form-group">
+	  <label for="accountEmail">{{if .Unregistered}}Your{{else}}New{{end}} Email Address</label>
+	  <input type="email" class="form-control" id="accountEmail" name="accountEmail" placeholder="Type your{{if .Unregistered}}{{else}} new{{end}} email here">
+	</div>
+
+	<button type="submit" class="btn btn-primary"><i class="fa fa-check-square-o"></i> {{if .Unregistered}}Register{{else}}Update{{end}}</button>
+	<a href="{{.CancelUrl}}" class="btn btn-danger" role="button"><i class="fa fa-times"></i> Cancel</a>
+      </form>
+
+    </div>
+   </div>
+
+  </div>
+  <!-- /container -->
+
+{{template "scripts.html"}}
+  <script src="/js/account.js"></script>
+ </body>
+</html>
+
+
