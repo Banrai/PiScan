@@ -23,10 +23,10 @@ const (
 	LINE_MAX_LEN = 500 // for splitting encoded attachment data
 
 	// templates for generating the message components
-	ADDRESS    = "{{.DisplayName}} <{{.Address}}>"
-	HEADERS    = "From: {{.Sender}}\r\nTo: {{.Recipient}}\r\nSubject: {{.Subject}}\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary={{.Boundary}}\r\n--{{.Boundary}}"
-	BODY       = "\r\nContent-Type: {{.ContentType}}\r\nContent-Transfer-Encoding:8bit\r\n\r\n{{.MessageBody}}\r\n--{{.Boundary}}"
-	ATTACHMENT = "\r\nContent-Type: {{.ContentType}}; name=\"{{.FileLocation}}\"\r\nContent-Transfer-Encoding:base64\r\nContent-Disposition: attachment; filename=\"{{.FileName}}\"\r\n\r\n{{.EncodedFileData}}\r\n--{{.Boundary}}--"
+	ADDRESS    = "\"{{.DisplayName}}\" <{{.Address}}>"
+	HEADERS    = "From: {{.Sender}}\r\nTo: {{.Recipient}}\r\nSubject: {{.Subject}}\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative; boundary=\"{{.Boundary}}\"\r\n"
+	BODY       = "\r\n--{{.Boundary}}\r\nContent-Type: {{.ContentType}}\r\n\r\n{{.MessageBody}}"
+	ATTACHMENT = "\r\n--{{.Boundary}}\r\nContent-Type: {{.ContentType}}; name=\"{{.FileLocation}}\"\r\nContent-Transfer-Encoding:base64\r\nContent-Disposition: attachment; filename=\"{{.FileName}}\"\r\n\r\n{{.EncodedFileData}}"
 
 	// message body mime types
 	TEXT_MIME = "text/plain"
@@ -158,7 +158,12 @@ func SendFromServer(subject, message, messageType, server string, sender, recipi
 		buf.WriteString(attach)
 	}
 
-	return smtp.SendMail(fmt.Sprintf("%s:%d", server, port), nil, from, []string{to}, []byte(buf.String()))
+	// add the closing boundary marker
+	buf.WriteString("\r\n--")
+	buf.WriteString(boundary)
+	buf.WriteString("--")
+
+	return smtp.SendMail(fmt.Sprintf("%s:%d", server, port), nil, sender.Address, []string{recipient.Address}, []byte(buf.String()))
 }
 
 func Send(subject, message, messageType string, sender, recipient *EmailAddress, attachments []*EmailAttachment) error {
