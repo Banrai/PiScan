@@ -421,6 +421,9 @@ func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.
 	renderItemEditTemplate(w, form)
 }
 
+// EditAccount presents the form for editing Account information (in
+// response to a GET request) and handles to add/updates (in response to
+// a POST request)
 func EditAccount(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates) {
 	// attempt to connect to the db
 	db, err := database.InitializeDB(dbCoords)
