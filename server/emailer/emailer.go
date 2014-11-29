@@ -2,7 +2,8 @@
 // governed by the license that can be found in the LICENSE file.
 
 // Package emailer provides functions for sending outgoing email,
-// inspired by https://gist.github.com/rmulley/6603544
+// inspired by https://gist.github.com/rmulley/6603544 and
+// https://code.google.com/p/go-wiki/wiki/SendingMail
 
 package emailer
 
@@ -123,6 +124,8 @@ func GenerateAttachment(attachment *EmailAttachment) (string, error) {
 	return doc.String(), err
 }
 
+// SendFromServer transmits the given message, with optional attachments,
+// via the defined mail server and port
 func SendFromServer(subject, message, messageType, server string, sender, recipient *EmailAddress, attachments []*EmailAttachment, port int) error {
 	var buf bytes.Buffer
 	boundary := GenerateBoundary()
@@ -162,10 +165,31 @@ func SendFromServer(subject, message, messageType, server string, sender, recipi
 	buf.WriteString("\r\n--")
 	buf.WriteString(boundary)
 	buf.WriteString("--")
+	fmt.Println(buf.String())
 
-	return smtp.SendMail(fmt.Sprintf("%s:%d", server, port), nil, sender.Address, []string{recipient.Address}, []byte(buf.String()))
+	// connect to the mail server + port
+	c, cErr := smtp.Dial(fmt.Sprintf("%s:%d", server, port))
+	if cErr != nil {
+		return cErr
+	}
+
+	// set the sender and recipient (raw email address strings)
+	c.Mail(sender.Address)
+	c.Rcpt(recipient.Address)
+
+	// stream the full email data
+	wc, err := c.Data()
+	if err != nil {
+		return err
+	}
+	defer wc.Close()
+
+	_, err = buf.WriteTo(wc)
+	return err
 }
 
+// Send transmits the given message, with optional attachments, via the
+// default mail server (localhost) and port (25)
 func Send(subject, message, messageType string, sender, recipient *EmailAddress, attachments []*EmailAttachment) error {
 	return SendFromServer(subject, message, messageType, MAIL_SERVER, sender, recipient, attachments, MAIL_PORT)
 }
