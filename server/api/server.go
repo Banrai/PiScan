@@ -33,7 +33,10 @@ var (
 )
 
 func WithServerDatabase(dbCoords DBConnection, fn func(map[string]*sql.Stmt)) {
-	statements := map[string]*sql.Stmt{}
+	preparedStatements := []string{barcodes.GTIN_LOOKUP,
+		barcodes.BRAND_LOOKUP,
+		barcodes.ASIN_LOOKUP,
+		barcodes.ASIN_INSERT}
 
 	connection := fmt.Sprintf("%s:%s@tcp(%s:%d)/product_open_data", dbCoords.User, dbCoords.Pass, dbCoords.Host, dbCoords.Port)
 	db, err := sql.Open("mysql", connection)
@@ -42,37 +45,15 @@ func WithServerDatabase(dbCoords DBConnection, fn func(map[string]*sql.Stmt)) {
 	}
 	defer db.Close()
 
-	gtin, err := db.Prepare(barcodes.GTIN_LOOKUP)
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		statements[barcodes.GTIN_LOOKUP] = gtin
+	statements := map[string]*sql.Stmt{}
+	for _, p := range preparedStatements {
+		stmt, err := db.Prepare(p)
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			statements[p] = stmt
+		}
 	}
-	defer gtin.Close()
-
-	brand, err := db.Prepare(barcodes.BRAND_LOOKUP)
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		statements[barcodes.BRAND_LOOKUP] = brand
-	}
-	defer brand.Close()
-
-	asinLookup, err := db.Prepare(barcodes.ASIN_LOOKUP)
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		statements[barcodes.ASIN_LOOKUP] = asinLookup
-	}
-	defer asinLookup.Close()
-
-	asinInsert, err := db.Prepare(barcodes.ASIN_INSERT)
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		statements[barcodes.ASIN_INSERT] = asinInsert
-	}
-	defer asinInsert.Close()
 
 	fn(statements)
 }
