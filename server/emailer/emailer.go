@@ -165,7 +165,6 @@ func SendFromServer(subject, message, messageType, server string, sender, recipi
 	buf.WriteString("\r\n--")
 	buf.WriteString(boundary)
 	buf.WriteString("--")
-	fmt.Println(buf.String())
 
 	// connect to the mail server + port
 	c, cErr := smtp.Dial(fmt.Sprintf("%s:%d", server, port))
