@@ -10,9 +10,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Banrai/PiScan/client/database"
+	"github.com/Banrai/PiScan/server/digest"
 	"github.com/mxk/go-sqlite/sqlite3"
 	"html/template"
 	"net/http"
+	"net/url"
 	"path"
 	"strconv"
 	"strings"
@@ -53,9 +55,9 @@ func Redirect(target string) http.HandlerFunc {
 }
 
 // Respond to requests using HTML templates and the standard Content-Type (i.e., "text/html")
-func MakeHTMLHandler(fn func(http.ResponseWriter, *http.Request, database.ConnCoordinates), db database.ConnCoordinates) http.HandlerFunc {
+func MakeHTMLHandler(fn func(http.ResponseWriter, *http.Request, database.ConnCoordinates, ...interface{}), db database.ConnCoordinates, opts ...interface{}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fn(w, r, db)
+		fn(w, r, db, opts...)
 	}
 }
 
@@ -291,20 +293,20 @@ func InitializeTemplates(folder string) {
 
 // ScannedItems returns all the products scanned, favorited or not, barcode
 // lookup successful or not
-func ScannedItems(w http.ResponseWriter, r *http.Request, db database.ConnCoordinates) {
+func ScannedItems(w http.ResponseWriter, r *http.Request, db database.ConnCoordinates, opts ...interface{}) {
 	getItems(w, r, db, false)
 }
 
 // FavoritedItems returns all the products scanned and favorited by this
 // Account
-func FavoritedItems(w http.ResponseWriter, r *http.Request, db database.ConnCoordinates) {
+func FavoritedItems(w http.ResponseWriter, r *http.Request, db database.ConnCoordinates, opts ...interface{}) {
 	getItems(w, r, db, true)
 }
 
 // DeleteItems accepts a form post of one or more Item.Id values, and
 // attempts to remove them from the client db. Unless it hits a critical
 // error, it returns home, to the list of scanned items
-func DeleteItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates) {
+func DeleteItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates, opts ...interface{}) {
 	del := func(i *database.Item, db *sqlite3.Conn) {
 		i.Delete(db)
 	}
@@ -313,7 +315,7 @@ func DeleteItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnC
 
 // FavoriteItems accepts a form post of one or more Item.Id values, and
 // attempts to change their status in the client db to 'favorite'
-func FavoriteItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates) {
+func FavoriteItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates, opts ...interface{}) {
 	fav := func(i *database.Item, db *sqlite3.Conn) {
 		i.Favorite(db)
 	}
@@ -322,7 +324,7 @@ func FavoriteItems(w http.ResponseWriter, r *http.Request, dbCoords database.Con
 
 // UnfavoriteItems accepts a form post of one or more Item.Id values,
 // and attempts to change their status in the client db to not 'favorite'
-func UnfavoriteItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates) {
+func UnfavoriteItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates, opts ...interface{}) {
 	fav := func(i *database.Item, db *sqlite3.Conn) {
 		i.Unfavorite(db)
 	}
@@ -332,7 +334,7 @@ func UnfavoriteItems(w http.ResponseWriter, r *http.Request, dbCoords database.C
 // InputUnknownItem handles the form for user contributions of unknown
 // barcode scans: a GET presents the form, and a POST responds to the
 // user-contributed input
-func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates) {
+func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates, opts ...interface{}) {
 	// attempt to connect to the db
 	db, err := database.InitializeDB(dbCoords)
 	if err != nil {
@@ -424,7 +426,7 @@ func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.
 // EditAccount presents the form for editing Account information (in
 // response to a GET request) and handles to add/updates (in response to
 // a POST request)
-func EditAccount(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates) {
+func EditAccount(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoordinates, opts ...interface{}) {
 	// attempt to connect to the db
 	db, err := database.InitializeDB(dbCoords)
 	if err != nil {
@@ -437,6 +439,13 @@ func EditAccount(w http.ResponseWriter, r *http.Request, dbCoords database.ConnC
 	acc, accErr := database.GetDesignatedAccount(db)
 	if accErr != nil {
 		http.Error(w, accErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// get the api server + port from the optional parameters
+	apiHost, apiHostOk := opts[0].(string)
+	if !apiHostOk {
+		http.Error(w, BAD_REQUEST, http.StatusInternalServerError)
 		return
 	}
 
@@ -470,8 +479,23 @@ func EditAccount(w http.ResponseWriter, r *http.Request, dbCoords database.ConnC
 					// update the account email address in the local client db
 					acc.Update(db, emailVal[0], acc.APICode)
 
-					// also need to ping the server with the api code and
-					// have the server send an email for verification
+					// ping the server with the api code and email for verification
+					ping := func() {
+						v := url.Values{}
+						v.Set("email", emailVal[0])
+						v.Set("api", acc.APICode)
+
+						// use the email address as the digest key
+						hmac := digest.GenerateDigest(emailVal[0], v.Encode())
+						v.Set("hmac", hmac)
+
+						res, err := http.Get(strings.Join([]string{fmt.Sprintf("http://%s", apiHost), "/register?", v.Encode()}, ""))
+						if err == nil {
+							res.Body.Close()
+						}
+					}
+
+					go ping() // do not wait for the server to reply
 
 					// return success
 					http.Redirect(w, r, ACCOUNT_URL, http.StatusFound)
