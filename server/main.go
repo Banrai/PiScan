@@ -4,16 +4,10 @@
 package main
 
 import (
-	"database/sql"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/Banrai/PiScan/server/api"
-	"github.com/Banrai/PiScan/server/commerce"
-	"github.com/Banrai/PiScan/server/commerce/amazon"
-	"github.com/Banrai/PiScan/server/database/barcodes"
 	"net/http"
-	"strings"
 )
 
 const (
@@ -27,40 +21,6 @@ const (
 	barcodeDBServer = "127.0.0.1"
 	barcodeDBPort   = 3306
 )
-
-// Lookup the barcode, using both the barcodes database, and the Amazon API
-func lookupBarcode(r *http.Request, db api.DBConnection) string {
-	// the result is a json representation of the list of found products
-	products := make([]*commerce.API, 0)
-
-	// this function only responds to POST requests
-	if "POST" == r.Method {
-		r.ParseForm()
-
-		barcodeVal, barcodeExists := r.PostForm["barcode"]
-		if barcodeExists {
-			queryFn := func(statements map[string]*sql.Stmt) {
-				asinLookup, asinLookupExists := statements[barcodes.ASIN_LOOKUP]
-				asinInsert, asinInsertExists := statements[barcodes.ASIN_INSERT]
-				if asinLookupExists && asinInsertExists {
-					prods, prodErr := amazon.Lookup(strings.Join(barcodeVal, ""), asinLookup, asinInsert)
-					if prodErr == nil {
-						for _, prod := range prods {
-							products = append(products, prod)
-						}
-					}
-				}
-			}
-			api.WithServerDatabase(db, queryFn)
-		}
-	}
-
-	result, err := json.Marshal(products)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return string(result)
-}
 
 func main() {
 	var (
@@ -79,12 +39,22 @@ func main() {
 	coords := api.DBConnection{Host: dbHost, User: dbUser, Pass: dbPass, Port: dbPort}
 
 	handlers := map[string]func(http.ResponseWriter, *http.Request){}
+
+	// respond to a barcode lookup request
 	handlers["/lookup"] = func(w http.ResponseWriter, r *http.Request) {
 		lookup := func(w http.ResponseWriter, r *http.Request) string {
-			return lookupBarcode(r, coords)
+			return api.LookupBarcode(r, coords)
 		}
 		api.Respond("application/json", "utf-8", lookup)(w, r)
 	}
-	api.NewAPIServer(host, port, api.DefaultServerReadTimeout, handlers)
 
+	// respond to contributor account creation requests
+	handlers["/register"] = func(w http.ResponseWriter, r *http.Request) {
+		register := func(w http.ResponseWriter, r *http.Request) string {
+			return api.RegisterAccount(r, coords, host)
+		}
+		api.Respond("application/json", "utf-8", register)(w, r)
+	}
+
+	api.NewAPIServer(host, port, api.DefaultServerReadTimeout, handlers)
 }

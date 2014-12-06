@@ -27,6 +27,11 @@ type DBConnection struct {
 	Port int
 }
 
+type SimpleMessage struct {
+	Ack string
+	Err error
+}
+
 var (
 	Srv                      *Server
 	DefaultServerReadTimeout = 30 // in seconds
@@ -36,7 +41,12 @@ func WithServerDatabase(dbCoords DBConnection, fn func(map[string]*sql.Stmt)) {
 	preparedStatements := []string{barcodes.GTIN_LOOKUP,
 		barcodes.BRAND_LOOKUP,
 		barcodes.ASIN_LOOKUP,
-		barcodes.ASIN_INSERT}
+		barcodes.ASIN_INSERT,
+		barcodes.ACCOUNT_INSERT,
+		barcodes.ACCOUNT_UPDATE,
+		barcodes.ACCOUNT_DELETE,
+		barcodes.ACCOUNT_LOOKUP_BY_EMAIL,
+		barcodes.ACCOUNT_LOOKUP_BY_ID}
 
 	connection := fmt.Sprintf("%s:%s@tcp(%s:%d)/product_open_data", dbCoords.User, dbCoords.Pass, dbCoords.Host, dbCoords.Port)
 	db, err := sql.Open("mysql", connection)
