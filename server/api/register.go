@@ -30,10 +30,10 @@ type RegistrationLink struct {
 	APICode   string
 }
 
-func SendVerificationEmail(server, email, code string) error {
+func SendVerificationEmail(server, email, code string, port int) error {
 	var msg bytes.Buffer
 	t := template.Must(template.New("VERIFY_MESSAGE").Parse(VERIFY_MESSAGE))
-	context := RegistrationLink{server, code}
+	context := RegistrationLink{fmt.Sprintf("%s:%d", server, port), code}
 	err := t.Execute(&msg, context)
 	if err == nil {
 		sender := emailer.EmailAddress{Address: VERIFY_SENDER}
@@ -43,7 +43,7 @@ func SendVerificationEmail(server, email, code string) error {
 	return err
 }
 
-func RegisterAccount(r *http.Request, db DBConnection, server string) string {
+func RegisterAccount(r *http.Request, db DBConnection, server string, port int) string {
 	// the result is a simple json ack
 	ack := new(SimpleMessage)
 
@@ -82,7 +82,7 @@ func RegisterAccount(r *http.Request, db DBConnection, server string) string {
 										// the account is created, but unverified
 
 										// send an email for verfication
-										verifyErr := SendVerificationEmail(server, email, apiCode)
+										verifyErr := SendVerificationEmail(server, email, apiCode, port)
 
 										// and update this json reply
 										ack.Ack = fmt.Sprintf("ok: %s", pk)

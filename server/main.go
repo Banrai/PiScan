@@ -51,7 +51,7 @@ func main() {
 	// respond to contributor account creation requests
 	handlers["/register"] = func(w http.ResponseWriter, r *http.Request) {
 		register := func(w http.ResponseWriter, r *http.Request) string {
-			return api.RegisterAccount(r, coords, host)
+			return api.RegisterAccount(r, coords, host, port)
 		}
 		api.Respond("application/json", "utf-8", register)(w, r)
 	}
