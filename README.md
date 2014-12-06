@@ -31,3 +31,4 @@ make all
  - [Vojtech Pavlik](http://atrey.karlin.mff.cuni.cz/~vojtech) for creating the [Linux Input Driver](http://atrey.karlin.mff.cuni.cz/~vojtech/input/) project
  - [linuxquestions.org](http://www.linuxquestions.org) user <tt>bricedebrignaisplage</tt> for his [post explaining how to read input devices](http://www.linuxquestions.org/questions/programming-9/read-from-a-usb-barcode-scanner-that-simulates-a-keyboard-495358/#post2767643)
  - Github user [gvalkov](https://github.com/gvalkov) for [golang-evdev](https://github.com/gvalkov/golang-evdev) which proved invaluable in implementing the [input_event struct](https://www.kernel.org/doc/Documentation/input/input.txt) in Go
+ - Github user [rmulley](https://github.com/rmulley) for [this gist](https://gist.github.com/rmulley/6603544) which was helpful in creating the [emailer package](server/emailer/emailer.go)

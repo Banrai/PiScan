@@ -21,7 +21,7 @@ const (
 	VERIFY_SUBJECT = "Please verify your email address"
 	VERIFY_MESSAGE = `<p>Thank you for registering to contribute to the Open Product Database.</p>
 <p>Please confirm your email address by clicking on this link:</p>
-<p><a href="http://{{.APIServer}}/verify/{{.APICode}}">http://{{.APIServer}}/verify/{{.APICode}}</a></p>
+<p><a href="{{.APIServer}}/verify/{{.APICode}}">http://{{.APIServer}}/verify/{{.APICode}}</a></p>
 <p>You only have to do this once per email address.</p>`
 )
 
