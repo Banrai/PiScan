@@ -79,6 +79,7 @@ func RegisterAccount(r *http.Request, db DBConnection, server string, port int) 
 									pk, addErr := acc.Add(insertStmt)
 									if addErr != nil {
 										ack.Err = accErr
+									} else {
 										// the account is created, but unverified
 
 										// send an email for verfication
