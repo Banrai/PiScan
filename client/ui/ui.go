@@ -477,29 +477,32 @@ func EditAccount(w http.ResponseWriter, r *http.Request, dbCoords database.ConnC
 			} else {
 				if acc.Id == accId {
 					// update the account email address in the local client db
-					acc.Update(db, emailVal[0], acc.APICode)
+					updateErr := acc.Update(db, emailVal[0], acc.APICode)
+					if updateErr != nil {
+						form.FormError = updateErr.Error()
+					} else {
+						// ping the server with the api code and email for verification
+						ping := func() {
+							v := url.Values{}
+							v.Set("email", emailVal[0])
+							v.Set("api", acc.APICode)
 
-					// ping the server with the api code and email for verification
-					ping := func() {
-						v := url.Values{}
-						v.Set("email", emailVal[0])
-						v.Set("api", acc.APICode)
+							// use the email address as the digest key
+							hmac := digest.GenerateDigest(emailVal[0], v.Encode())
+							v.Set("hmac", hmac)
 
-						// use the email address as the digest key
-						hmac := digest.GenerateDigest(emailVal[0], v.Encode())
-						v.Set("hmac", hmac)
-
-						res, err := http.Get(strings.Join([]string{fmt.Sprintf("http://%s", apiHost), "/register?", v.Encode()}, ""))
-						if err == nil {
-							res.Body.Close()
+							res, err := http.Get(strings.Join([]string{fmt.Sprintf("http://%s", apiHost), "/register?", v.Encode()}, ""))
+							if err == nil {
+								res.Body.Close()
+							}
 						}
+
+						go ping() // do not wait for the server to reply
+
+						// return success
+						http.Redirect(w, r, ACCOUNT_URL, http.StatusFound)
+						return
 					}
-
-					go ping() // do not wait for the server to reply
-
-					// return success
-					http.Redirect(w, r, ACCOUNT_URL, http.StatusFound)
-					return
 				}
 			}
 		}
