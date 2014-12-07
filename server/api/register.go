@@ -72,7 +72,15 @@ func RegisterAccount(r *http.Request, db DBConnection, server string, port int) 
 							if accErr != nil {
 								ack.Err = accErr
 							} else {
-								if acc.Id == "" {
+								if acc.Id != "" {
+									// this account has already been registered
+									ack.Ack = fmt.Sprintf("exists: %s", acc.Id)
+
+									if !acc.Verified {
+										// but it has yet to be verified, so send an email
+										ack.Err = SendVerificationEmail(server, email, acc.Id, port)
+									}
+								} else {
 									// can proceed with the registration (add this email + api combination)
 									acc.Email = email
 									acc.APICode = apiCode
@@ -83,11 +91,10 @@ func RegisterAccount(r *http.Request, db DBConnection, server string, port int) 
 										// the account is created, but unverified
 
 										// send an email for verfication
-										verifyErr := SendVerificationEmail(server, email, pk, port)
+										ack.Err = SendVerificationEmail(server, email, pk, port)
 
 										// and update this json reply
 										ack.Ack = fmt.Sprintf("ok: %s", pk)
-										ack.Err = verifyErr
 									}
 								}
 							}
