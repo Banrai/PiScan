@@ -83,7 +83,7 @@ func RegisterAccount(r *http.Request, db DBConnection, server string, port int) 
 										// the account is created, but unverified
 
 										// send an email for verfication
-										verifyErr := SendVerificationEmail(server, email, apiCode, port)
+										verifyErr := SendVerificationEmail(server, email, pk, port)
 
 										// and update this json reply
 										ack.Ack = fmt.Sprintf("ok: %s", pk)
@@ -104,4 +104,41 @@ func RegisterAccount(r *http.Request, db DBConnection, server string, port int) 
 		fmt.Println(err)
 	}
 	return string(result)
+}
+
+func VerifyAccount(r *http.Request, db DBConnection) string {
+	// accumulate the result in a simple ack struct
+	ack := new(SimpleMessage)
+
+	// this function only responds to GET requests
+	if "GET" == r.Method {
+		// get the verification code from the query string
+		code := r.URL.Path[len("/verify/"):]
+
+		verifyFn := func(statements map[string]*sql.Stmt) {
+			lookupStmt, lookupStmtExists := statements[barcodes.ACCOUNT_LOOKUP_BY_ID]
+			updateStmt, updateStmtExists := statements[barcodes.ACCOUNT_UPDATE]
+			if lookupStmtExists && updateStmtExists {
+				// see if the account for this code exists
+				acc, accErr := barcodes.LookupAccount(lookupStmt, code, true)
+				if accErr != nil {
+					ack.Err = accErr
+				} else {
+					if acc.Id == code {
+						// can proceed with the verification
+						acc.Verified = true
+						ack.Err = acc.Update(updateStmt)
+					}
+				}
+			}
+		}
+		WithServerDatabase(db, verifyFn)
+	}
+
+	// need to return a simple html string in reply
+	if ack.Err != nil {
+		return ack.Err.Error()
+	} else {
+		return "Thank you for verifying your email address"
+	}
 }

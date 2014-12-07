@@ -48,12 +48,12 @@ func main() {
 		api.Respond("application/json", "utf-8", lookup)(w, r)
 	}
 
-	// respond to contributor account creation requests
-	handlers["/register"] = func(w http.ResponseWriter, r *http.Request) {
-		register := func(w http.ResponseWriter, r *http.Request) string {
-			return api.RegisterAccount(r, coords, host, port)
+	// respond to the email verification link
+	handlers["/verify"] = func(w http.ResponseWriter, r *http.Request) {
+		verify := func(w http.ResponseWriter, r *http.Request) string {
+			return api.VerifyAccount(r, coords)
 		}
-		api.Respond("application/json", "utf-8", register)(w, r)
+		api.Respond("text/html", "utf-8", verify)(w, r)
 	}
 
 	api.NewAPIServer(host, port, api.DefaultServerReadTimeout, handlers)
