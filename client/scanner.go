@@ -39,10 +39,11 @@ func main() {
 
 	if len(sqliteTablesDefinitionPath) > 0 {
 		// this is a request to create the client db for the first time
-		_, initErr := database.InitializeDB(database.ConnCoordinates{sqlitePath, sqliteFile, sqliteTablesDefinitionPath})
+		initDb, initErr := database.InitializeDB(database.ConnCoordinates{sqlitePath, sqliteFile, sqliteTablesDefinitionPath})
 		if initErr != nil {
 			log.Fatal(initErr)
 		}
+		defer initDb.Close()
 		log.Println(fmt.Sprintf("Client database '%s' created in '%s'", sqliteFile, sqlitePath))
 
 	} else {
@@ -50,6 +51,13 @@ func main() {
 
 		// coordinates for connecting to the sqlite database (from the command line options)
 		dbCoordinates := database.ConnCoordinates{DBPath: sqlitePath, DBFile: sqliteFile}
+
+		// attempt to connect to the sqlite db
+		db, dbErr := database.InitializeDB(dbCoordinates)
+		if dbErr != nil {
+			log.Fatal(dbErr)
+		}
+		defer db.Close()
 
 		processScanFn := func(barcode string) {
 			// Lookup the barcode in the API server
@@ -67,14 +75,6 @@ func main() {
 				fmt.Println(fmt.Sprintf("API barcode lookup error: %s", err))
 				return
 			}
-
-			// attempt to connect to the sqlite db
-			db, dbErr := database.InitializeDB(dbCoordinates)
-			if err != nil {
-				fmt.Println(fmt.Sprintf("Client db access error: %s", dbErr))
-				return
-			}
-			defer db.Close()
 
 			// get the Account for this request
 			acc, accErr := database.GetDesignatedAccount(db)
