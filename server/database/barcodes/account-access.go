@@ -25,7 +25,7 @@ const (
 // Data structure (POD contributor accounts)
 
 type ACCOUNT struct {
-	Id       string `json:"id"`
+	Id       string `json:"pk"`
 	Email    string `json:"email"`
 	APICode  string `json:"code"`
 	Verified bool   `json:"verified,omitempty"`
