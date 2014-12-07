@@ -90,7 +90,7 @@ func (a *ACCOUNT) Delete(stmt *sql.Stmt) error {
 }
 
 func (a *ACCOUNT) Update(stmt *sql.Stmt) error {
-	_, err := stmt.Exec(a.Email, a.APICode, a.Verified, a.Enabled, a.Id)
+	_, err := stmt.Exec(a.Email, a.Verified, a.Enabled, a.Id)
 
 	return err
 }

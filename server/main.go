@@ -57,7 +57,7 @@ func main() {
 	}
 
 	// respond to the email verification link
-	handlers["/verify"] = func(w http.ResponseWriter, r *http.Request) {
+	handlers["/verify/"] = func(w http.ResponseWriter, r *http.Request) {
 		verify := func(w http.ResponseWriter, r *http.Request) string {
 			return api.VerifyAccount(r, coords)
 		}
