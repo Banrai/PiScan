@@ -70,6 +70,7 @@ func main() {
 		http.HandleFunc("/account/", ui.MakeHTMLHandler(ui.EditAccount, dbCoordinates, extraCoordinates...))
 		// ajax
 		http.HandleFunc("/remove/", ui.MakeHandler(ui.RemoveSingleItem, dbCoordinates, MIME_JSON))
+		http.HandleFunc("/status/", ui.MakeHandler(ui.ConfirmServerAccount, dbCoordinates, MIME_JSON, extraCoordinates...))
 
 		// static resources
 		http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir(path.Join(templatesFolder, "../css/")))))

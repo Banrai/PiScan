@@ -64,5 +64,13 @@ func main() {
 		api.Respond("text/html", "utf-8", verify)(w, r)
 	}
 
+	// respond to account status requests
+	handlers["/status"] = func(w http.ResponseWriter, r *http.Request) {
+		register := func(w http.ResponseWriter, r *http.Request) string {
+			return api.GetAccountStatus(r, coords, host, port)
+		}
+		api.Respond("application/json", "utf-8", register)(w, r)
+	}
+
 	api.NewAPIServer(host, port, api.DefaultServerReadTimeout, handlers)
 }

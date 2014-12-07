@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Banrai/PiScan/client/database"
+	"github.com/Banrai/PiScan/server/api"
 	"github.com/Banrai/PiScan/server/digest"
 	"github.com/mxk/go-sqlite/sqlite3"
 	"html/template"
@@ -62,13 +63,18 @@ func MakeHTMLHandler(fn func(http.ResponseWriter, *http.Request, database.ConnCo
 }
 
 // Respond to requests that are not "text/html" Content-Types (e.g., for ajax calls)
-func MakeHandler(fn func(*http.Request, database.ConnCoordinates) string, db database.ConnCoordinates, mediaType string) http.HandlerFunc {
+func MakeHandler(fn func(*http.Request, database.ConnCoordinates, ...interface{}) string, db database.ConnCoordinates, mediaType string, opts ...interface{}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=utf-8", mediaType))
-		data := fn(r, db)
+		data := fn(r, db, opts...)
 		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(data)))
 		fmt.Fprintf(w, data)
 	}
+}
+
+// Standardize how the API Server string is generated
+func defineApiServer(apiHost string) string {
+	return fmt.Sprintf("http://%s", apiHost)
 }
 
 /* JSON response struct */
@@ -491,7 +497,7 @@ func EditAccount(w http.ResponseWriter, r *http.Request, dbCoords database.ConnC
 							hmac := digest.GenerateDigest(emailVal[0], v.Encode())
 							v.Set("hmac", hmac)
 
-							res, err := http.Get(strings.Join([]string{fmt.Sprintf("http://%s", apiHost), "/register?", v.Encode()}, ""))
+							res, err := http.Get(strings.Join([]string{defineApiServer(apiHost), "/register?", v.Encode()}, ""))
 							if err == nil {
 								res.Body.Close()
 							}
@@ -517,7 +523,7 @@ func EditAccount(w http.ResponseWriter, r *http.Request, dbCoords database.ConnC
 // post variable, and attempts to delete it, if it exists. The reply is a
 // jsonified string, passed back to MakeHandler() to be coupled with the
 // right mime type
-func RemoveSingleItem(r *http.Request, dbCoords database.ConnCoordinates) string {
+func RemoveSingleItem(r *http.Request, dbCoords database.ConnCoordinates, opts ...interface{}) string {
 	// prepare the ajax reply object
 	ack := AjaxAck{Message: "", Error: ""}
 
@@ -558,6 +564,95 @@ func RemoveSingleItem(r *http.Request, dbCoords database.ConnCoordinates) string
 					}
 				} else {
 					ack.Error = "Missing item id"
+				}
+			} else {
+				ack.Error = BAD_POST
+			}
+		} else {
+			ack.Error = BAD_REQUEST
+		}
+	}
+
+	// convert the ajax reply object to json
+	ackObj, ackObjErr := json.Marshal(ack)
+	if ackObjErr != nil {
+		return ackObjErr.Error()
+	}
+	return string(ackObj)
+}
+
+func ConfirmServerAccount(r *http.Request, dbCoords database.ConnCoordinates, opts ...interface{}) string {
+	// prepare the ajax reply object
+	ack := AjaxAck{Message: "", Error: ""}
+
+	// attempt to connect to the db
+	db, err := database.InitializeDB(dbCoords)
+	if err != nil {
+		ack.Error = err.Error()
+	}
+	defer db.Close()
+
+	// get the api server + port from the optional parameters
+	apiHost, apiHostOk := opts[0].(string)
+	if !apiHostOk {
+		ack.Error = BAD_REQUEST
+	}
+
+	if ack.Error == "" {
+		// get the Account for this request
+		acc, accErr := database.GetDesignatedAccount(db)
+		if accErr != nil {
+			ack.Error = accErr.Error()
+		}
+
+		/* // make sure the hidden account id value matches the Account
+		accId, accIdErr := strconv.ParseInt(accVal[0], 10, 64)
+		if accIdErr != nil {
+			form.FormError = accIdErr.Error()
+		} else {
+			if acc.Id == accId {*/
+		// get the account from the POST values
+		if "POST" == r.Method {
+			r.ParseForm()
+			if accVal, exists := r.PostForm["account"]; exists {
+				if len(accVal) > 0 {
+					id, idErr := strconv.ParseInt(accVal[0], 10, 64)
+					if idErr != nil {
+						ack.Error = idErr.Error()
+					} else {
+						if acc.Id != id {
+							ack.Error = BAD_REQUEST
+						} else {
+							// prepare the API Server request
+							v := url.Values{}
+							v.Set("email", acc.Email)
+
+							// use the email address as the digest key
+							hmac := digest.GenerateDigest(acc.Email, v.Encode())
+							v.Set("hmac", hmac)
+
+							// ping the API Server for the status of this account
+							res, resErr := http.Get(strings.Join([]string{defineApiServer(apiHost), "/status?", v.Encode()}, ""))
+							defer res.Body.Close()
+							if resErr != nil {
+								ack.Error = resErr.Error()
+							} else {
+								// read and parse the json message from the API Server
+								m := new(api.SimpleMessage)
+								dec := json.NewDecoder(res.Body)
+								dec.Decode(&m)
+
+								// assign the json ack accordingly
+								if m.Err != nil {
+									ack.Error = m.Err.Error()
+								} else {
+									ack.Message = m.Ack
+								}
+							}
+						}
+					}
+				} else {
+					ack.Error = "Missing account id"
 				}
 			} else {
 				ack.Error = BAD_POST

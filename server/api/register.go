@@ -149,3 +149,56 @@ func VerifyAccount(r *http.Request, db DBConnection) string {
 		return "Thank you for verifying your email address"
 	}
 }
+
+func GetAccountStatus(r *http.Request, db DBConnection, server string, port int) string {
+	// the result is a simple json ack
+	ack := new(SimpleMessage)
+
+	// this function only responds to GET requests with
+	// an hmac digest of the contents
+	if "GET" == r.Method {
+		params, paramErr := url.ParseQuery(r.URL.RawQuery)
+		if paramErr != nil {
+			ack.Err = paramErr
+		} else {
+			email := params.Get("email")
+			hmacDigest := params.Get("hmac")
+
+			if email != "" && hmacDigest != "" {
+				// confirm the digest matches
+				params.Del("hmac") // separate the digest from the rest
+				if digest.DigestMatches(email, params.Encode(), hmacDigest) {
+					// the request is valid
+					statusFn := func(statements map[string]*sql.Stmt) {
+						lookupStmt, lookupStmtExists := statements[barcodes.ACCOUNT_LOOKUP_BY_EMAIL]
+						if lookupStmtExists {
+							// see if the email corresponds to an account
+							acc, accErr := barcodes.LookupAccount(lookupStmt, email, false)
+							if accErr != nil {
+								ack.Err = accErr
+							} else {
+								if acc.Id != "" {
+									// this account has already been registered
+									// so return its verified status in the message
+									if acc.Verified {
+										ack.Ack = "true"
+									} else {
+										ack.Ack = "false"
+									}
+									ack.Err = nil
+								}
+							}
+						}
+					}
+					WithServerDatabase(db, statusFn)
+				}
+			}
+		}
+	}
+
+	result, err := json.Marshal(ack)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return string(result)
+}
