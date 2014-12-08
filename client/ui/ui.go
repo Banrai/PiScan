@@ -39,7 +39,7 @@ var (
 
 	ITEM_LIST_TEMPLATE_FILES    = []string{"items.html", "head.html", "navigation_tabs.html", "actions.html", "modal.html", "scripts.html"}
 	ITEM_EDIT_TEMPLATE_FILES    = []string{"define_item.html", "head.html", "scripts.html"}
-	ACCOUNT_EDIT_TEMPLATE_FILES = []string{"account.html", "head.html", "navigation_tabs.html", "scripts.html"}
+	ACCOUNT_EDIT_TEMPLATE_FILES = []string{"account.html", "head.html", "navigation_tabs.html", "modal.html", "scripts.html"}
 
 	ITEM_LIST_TEMPLATES    *template.Template
 	ITEM_EDIT_TEMPLATES    *template.Template
@@ -605,12 +605,6 @@ func ConfirmServerAccount(r *http.Request, dbCoords database.ConnCoordinates, op
 			ack.Error = accErr.Error()
 		}
 
-		/* // make sure the hidden account id value matches the Account
-		accId, accIdErr := strconv.ParseInt(accVal[0], 10, 64)
-		if accIdErr != nil {
-			form.FormError = accIdErr.Error()
-		} else {
-			if acc.Id == accId {*/
 		// get the account from the POST values
 		if "POST" == r.Method {
 			r.ParseForm()

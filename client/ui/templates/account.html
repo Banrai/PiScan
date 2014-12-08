@@ -30,7 +30,7 @@
       {{if .FormError}}<div class="alert alert-danger" role="alert"><i class="fa fa-exclamation-triangle"></i> {{.FormError}}</div>{{end}}
 
       <form id="accountForm" role="form" class="form-horizontal" action="/account/{{.Account.Id}}" method="POST"{{if .Unregistered}}{{else}} style="display:none"{{end}}>
-	<input type="hidden" name="account" value="{{.Account.Id}}">
+	<input type="hidden" id="account" name="account" value="{{.Account.Id}}">
 
 	<div class="form-group">
 	  <label for="accountEmail">{{if .Unregistered}}Your{{else}}New{{end}} Email Address</label>
@@ -44,10 +44,15 @@
     </div>
    </div>
 
+   {{template "modal.html"}}
   </div>
   <!-- /container -->
 
+  <script type="text/javascript">
+    var ACC_REG = {{if .Unregistered}}false{{else}}true{{end}};
+  </script>
 {{template "scripts.html"}}
+  <script src="/js/utils.js"></script>
   <script src="/js/account.js"></script>
  </body>
 </html>

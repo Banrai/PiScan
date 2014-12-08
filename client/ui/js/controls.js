@@ -13,13 +13,6 @@ function toggleActions () {
     }
 }
 
-function showModal (title, header, message) {
-    $('#modalWindow').modal('show');
-    $('#modalTitle').text(title);
-    $('#modalMessageHeader').text(header);
-    $('#modalMessage').text(message);
-}
-
 function buyAmzUS (targetClass) {
     var i, d, q; cartUrl = "", amzItems = {}, selectedItems = [];
     $("input:hidden").each(function() {
