@@ -68,6 +68,7 @@ func main() {
 		http.HandleFunc("/unfavorite/", ui.MakeHTMLHandler(ui.UnfavoriteItems, dbCoordinates))
 		http.HandleFunc("/input/", ui.MakeHTMLHandler(ui.InputUnknownItem, dbCoordinates))
 		http.HandleFunc("/account/", ui.MakeHTMLHandler(ui.EditAccount, dbCoordinates, extraCoordinates...))
+		//http.HandleFunc("/email/", ui.MakeHTMLHandler(ui.EmailItems, dbCoordinates, extraCoordinates...)) // from the API Server
 		// ajax
 		http.HandleFunc("/remove/", ui.MakeHandler(ui.RemoveSingleItem, dbCoordinates, MIME_JSON))
 		http.HandleFunc("/status/", ui.MakeHandler(ui.ConfirmServerAccount, dbCoordinates, MIME_JSON, extraCoordinates...))
