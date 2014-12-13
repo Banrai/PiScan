@@ -14,6 +14,7 @@
 
       {{if .Items}}
       <form id="bulkActions" method="POST" action="">
+	<input type="hidden" id="account" name="account" value="{{.Account.Id}}">
 	<!-- options (for selected items) -->
 	<div class="row item-header">
 	  <div class="col-xs-2 col-sm-1"><input id="id_actions_chk" type="checkbox" /></div>

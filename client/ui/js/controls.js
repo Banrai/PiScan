@@ -84,8 +84,14 @@ $(function(){
 	    if( "/buyAMZN:us/" == target ) {
 		buyAmzUS("AMZN:us");
 	    } else {
-		$('#bulkActions').attr('action', target);
-		$("#bulkActions").submit();
+		var submitOk = true;
+		if( "/email/" == target ) {
+		    submitOk = checkAccountStatus( $('input[type=hidden]#account').val() );
+		}
+		if( submitOk ) {
+		    $('#bulkActions').attr('action', target);
+		    $("#bulkActions").submit();
+		}
 	    }
 	}
     });

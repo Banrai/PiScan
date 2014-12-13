@@ -102,6 +102,7 @@ type ItemsPage struct {
 	ActiveTab *ActiveTab
 	Actions   []*Action
 	Items     []*database.Item
+	Account   *database.Account
 	Scanned   bool
 }
 
@@ -195,6 +196,7 @@ func getItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoor
 		Scanned:   !favorites,
 		ActiveTab: &ActiveTab{Scanned: !favorites, Favorites: favorites, Account: false, ShowTabs: true},
 		Actions:   actions,
+		Account:   acc,
 		Items:     items}
 
 	renderItemListTemplate(w, p)
