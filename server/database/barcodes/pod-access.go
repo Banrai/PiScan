@@ -22,7 +22,7 @@ const (
 	BARCODE_INSERT           = "insert into barcode (id, barcode, product_name, product_desc, is_edit, account_id) values (unhex(?), ?, ?, ?, ?, unhex(?))"
 	BARCODE_BRAND_INSERT     = "insert into barcode_brand (id, bsin, barcode_id) values (unhex(?), ?, unhex(?))"
 	CONTRIBUTED_BRAND_LOOKUP = "select hex(id), brand_name, brand_url, hex(account_id) from contributed_brand where brand_name like ?"
-	CONTRIBUTED_BRAND_INSERT = "insert into contributed_brand (id, brand_name, brand_url, account_id values (unhex(?), ?, ?, unhex(?))"
+	CONTRIBUTED_BRAND_INSERT = "insert into contributed_brand (id, brand_name, brand_url, account_id) values (unhex(?), ?, ?, unhex(?))"
 )
 
 // Data structures (POD)
