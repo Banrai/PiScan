@@ -46,7 +46,7 @@ func ContributeData(r *http.Request, db DBConnection) string {
 							//brandName, brandNameExists := r.PostForm["brandName"] // leave out the brand info for now
 							//brandUrl, brandUrlExists := r.PostForm["brandUrl"]
 
-							item := barcodes.BARCODE{Barcode: barcode[0]}
+							item := barcodes.BARCODE{Barcode: barcode[0], GtinEdit: false}
 							if prodNameExists {
 								item.ProductName = prodName[0]
 							}
