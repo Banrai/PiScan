@@ -14,30 +14,6 @@ import (
 	"strings"
 )
 
-/*
-type API struct {
-	SKU         string `json:"sku"`
-	ProductName string `json:"desc,omitempty"`
-	ProductType string `json:"type,omitempty"`
-	Vendor      string `json:"vnd"`
-}
-
-type GTIN struct {
-	Id          string `json:"barcode"`
-	ProductName string `json:"product,omitempty"`
-	BrandId     string `json:"bsin,omitempty"`
-}
-
-type BARCODE struct {
-	Uuid        string `json:"id"`
-	Barcode     string `json:"barcode"`
-	ProductName string `json:"product,omitempty"`
-	ProductDesc string `json:"desc,omitempty"`
-	GtinEdit    bool   `json:"gtinCorrection,omitempty"`
-	AccountID   string `json:"account"`
-}
-*/
-
 // Lookup the barcode, using both the barcodes database, and the Amazon API
 func LookupBarcode(r *http.Request, db DBConnection) string {
 	// the result is a json representation of the list of found products
