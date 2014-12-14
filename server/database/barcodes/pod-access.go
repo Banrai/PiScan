@@ -14,8 +14,9 @@ import (
 
 const (
 	// Prepared Queries (POD)
-	GTIN_LOOKUP  = "select gtin_nm, bsin from gtin where gtin_cd = ?"
-	BRAND_LOOKUP = "select brand_nm, brand_link from brand where bsin = ?"
+	GTIN_LOOKUP       = "select gtin_nm, bsin from gtin where gtin_cd = ?"
+	BRAND_LOOKUP      = "select brand_nm, brand_link from brand where bsin = ?"
+	BRAND_NAME_LOOKUP = "select bsin, brand_nm, brand_link from brand where brand_nm like ?"
 
 	// User contributions
 	BARCODE_LOOKUP           = "select hex(id), product_name, product_desc, is_edit, hex(account_id) from barcode where barcode = unhex(?)"
@@ -129,6 +130,38 @@ func LookupBrand(stmt *sql.Stmt, bsin string) ([]*BRAND, error) {
 	return results, nil
 }
 
+func LookupBrandByName(stmt *sql.Stmt, brandName string) ([]*BRAND, error) {
+	results := make([]*BRAND, 0)
+
+	rows, err := stmt.Query(fmt.Sprintf("%s%%", brandName)) // like 'brandName%'
+	if err != nil {
+		return results, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var i, n, u sql.NullString
+		err := rows.Scan(&i, &n, &u)
+		if err != nil {
+			return results, err
+		} else {
+			if n.Valid || u.Valid {
+				result := new(BRAND)
+				result.Id = i.String
+				if n.Valid {
+					result.Name = n.String
+				}
+				if u.Valid {
+					result.URL = u.String
+				}
+				results = append(results, result)
+			}
+		}
+	}
+
+	return results, nil
+}
+
 // Query Functions (user contributions)
 
 func LookupContributedBarcode(stmt *sql.Stmt, code string) ([]*BARCODE, error) {
@@ -206,13 +239,13 @@ func ContributeBarcode(stmt *sql.Stmt, rec BARCODE, acc *ACCOUNT) (string, error
 	return rec.Uuid, err
 }
 
-func ContributeBarcodeBrand(stmt *sql.Stmt, rec BARCODE, brand BRAND) error {
+func ContributeBarcodeBrand(stmt *sql.Stmt, rec BARCODE, brand *BRAND) error {
 	_, err := stmt.Exec(GenerateUUID(UndashedUUID), brand.Id, rec.Uuid)
 
 	return err
 }
 
-func ContributeBrand(stmt *sql.Stmt, rec CONTRIBUTED_BRAND, acc ACCOUNT) error {
+func ContributeBrand(stmt *sql.Stmt, rec *CONTRIBUTED_BRAND, acc *ACCOUNT) error {
 	_, err := stmt.Exec(GenerateUUID(UndashedUUID), rec.Name, rec.URL, acc.Id)
 
 	return err

@@ -40,6 +40,7 @@ var (
 func WithServerDatabase(dbCoords DBConnection, fn func(map[string]*sql.Stmt)) {
 	preparedStatements := []string{barcodes.GTIN_LOOKUP,
 		barcodes.BRAND_LOOKUP,
+		barcodes.BRAND_NAME_LOOKUP,
 		barcodes.BARCODE_LOOKUP,
 		barcodes.BARCODE_INSERT,
 		barcodes.BARCODE_BRAND_INSERT,
