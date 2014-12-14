@@ -358,6 +358,13 @@ func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.
 		return
 	}
 
+	// get the api server + port from the optional parameters
+	apiHost, apiHostOk := opts[0].(string)
+	if !apiHostOk {
+		http.Error(w, BAD_REQUEST, http.StatusInternalServerError)
+		return
+	}
+
 	// prepare the html page response
 	form := &ItemForm{Title: "Contribute Product Information",
 		CancelUrl:    HOME_URL,
@@ -410,8 +417,42 @@ func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.
 						item.UserContributed = true
 						item.Update(db)
 
-						// also need to mark the contribution in the POD clone db (via API, ultimately)
-						// this is where to use the prodDesc, brandName, brandUrl post data
+						// also need to mark the contribution to POD in the server
+						if acc.Email != database.ANONYMOUS_EMAIL {
+							// get the form's prodDesc, brandName, brandUrl data
+							prodDesc, prodDescExists := r.PostForm["prodDesc"]
+							brandName, brandNameExists := r.PostForm["brandName"]
+							brandUrl, brandUrlExists := r.PostForm["brandUrl"]
+
+							// ping the server with the contribution data
+							ping := func() {
+								v := url.Values{}
+								v.Set("email", acc.Email)
+								v.Set("barcode", barcodeVal[0])
+								v.Set("prodName", prodNameVal[0])
+								if prodDescExists {
+									v.Set("prodDesc", prodDesc[0])
+								}
+								if brandNameExists {
+									v.Set("brandName", brandName[0])
+								}
+								if brandUrlExists {
+									v.Set("brandUrl", brandUrl[0])
+								}
+
+								// use the account api code as the digest key
+								hmac := digest.GenerateDigest(acc.APICode, v.Encode())
+								v.Set("hmac", hmac)
+
+								res, err := http.PostForm(strings.Join([]string{defineApiServer(apiHost), "/contribute/"}, ""), v)
+								if err == nil {
+									res.Body.Close()
+								}
+							}
+
+							go ping() // do not wait for the server to reply
+
+						}
 
 						// return success
 						http.Redirect(w, r, HOME_URL, http.StatusFound)

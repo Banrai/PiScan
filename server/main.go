@@ -72,5 +72,13 @@ func main() {
 		api.Respond("application/json", "utf-8", register)(w, r)
 	}
 
+	// accept user-contributed data
+	handlers["/contribute/"] = func(w http.ResponseWriter, r *http.Request) {
+		contribute := func(w http.ResponseWriter, r *http.Request) string {
+			return api.ContributeData(r, coords)
+		}
+		api.Respond("application/json", "utf-8", contribute)(w, r)
+	}
+
 	api.NewAPIServer(host, port, api.DefaultServerReadTimeout, handlers)
 }

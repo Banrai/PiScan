@@ -196,7 +196,7 @@ func LookupContributedBrand(stmt *sql.Stmt, brandName string) ([]*CONTRIBUTED_BR
 
 // Write functions (user contributions)
 
-func ContributeBarcode(stmt *sql.Stmt, rec BARCODE, acc ACCOUNT) (string, error) {
+func ContributeBarcode(stmt *sql.Stmt, rec BARCODE, acc *ACCOUNT) (string, error) {
 	if rec.Uuid == "" {
 		rec.Uuid = GenerateUUID(UndashedUUID)
 	}
