@@ -21,7 +21,7 @@ const (
 
 	{{range $i, $item := .Items}}
 	<p>
-	  {{$i}}. {{$item}}
+	  {{(plus1 $i)}}. {{$item}}
 	</p>
 	{{end}}`
 )
@@ -31,9 +31,19 @@ type EmailedItems struct {
 	Email string
 }
 
+var TEMPLATE_FUNCTIONS = template.FuncMap{
+	// Thanks to Russ Cox, for demonstrating how to use template functions
+	// http://play.golang.org/p/V94BPN0uKD
+	// via http://stackoverflow.com/questions/22367337/last-item-in-a-golang-template-range#comment34044021_22375000
+
+	"plus1": func(x int) int { // use this to increment a range value (which starts at zero) within a template
+		return x + 1
+	},
+}
+
 func SendEmailedItems(context EmailedItems) error {
 	var msg bytes.Buffer
-	t := template.Must(template.New("SHOPPING_LIST_MESSAGE").Parse(SHOPPING_LIST_MESSAGE))
+	t := template.Must(template.New("SHOPPING_LIST_MESSAGE").Funcs(TEMPLATE_FUNCTIONS).Parse(SHOPPING_LIST_MESSAGE))
 	err := t.Execute(&msg, context)
 	if err == nil {
 		sender := emailer.EmailAddress{Address: SERVER_SENDER}
