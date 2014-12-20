@@ -21,7 +21,7 @@ const (
 
 	{{range $i, $item := .Items}}
 	<p>
-	  {{$i}}. {{$item.Desc}}
+	  {{$i}}. {{$item}}
 	</p>
 	{{end}}`
 )
