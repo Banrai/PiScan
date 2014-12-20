@@ -10,11 +10,34 @@ import (
 	"github.com/Banrai/PiScan/client/database"
 	"github.com/Banrai/PiScan/server/api"
 	"github.com/Banrai/PiScan/server/digest"
+	"html/template"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 )
+
+var (
+	ACCOUNT_EDIT_TEMPLATE_FILES = []string{"account.html", "head.html", "navigation_tabs.html", "modal.html", "scripts.html"}
+	ACCOUNT_EDIT_TEMPLATES      *template.Template
+)
+
+type AccountForm struct {
+	Title        string
+	ActiveTab    *ActiveTab
+	Account      *database.Account
+	CancelUrl    string
+	FormError    string
+	Unregistered bool
+}
+
+/* HTML Response Functions (via templates) */
+
+func renderAccountEditTemplate(w http.ResponseWriter, a *AccountForm) {
+	if TEMPLATES_INITIALIZED {
+		ACCOUNT_EDIT_TEMPLATES.Execute(w, a)
+	}
+}
 
 // EditAccount presents the form for editing Account information (in
 // response to a GET request) and handles to add/updates (in response to

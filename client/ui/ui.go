@@ -33,13 +33,11 @@ var (
 		return t
 	}
 
-	ITEM_LIST_TEMPLATE_FILES    = []string{"items.html", "head.html", "navigation_tabs.html", "actions.html", "modal.html", "scripts.html"}
-	ITEM_EDIT_TEMPLATE_FILES    = []string{"define_item.html", "head.html", "scripts.html"}
-	ACCOUNT_EDIT_TEMPLATE_FILES = []string{"account.html", "head.html", "navigation_tabs.html", "modal.html", "scripts.html"}
+	ITEM_LIST_TEMPLATE_FILES = []string{"items.html", "head.html", "navigation_tabs.html", "actions.html", "modal.html", "scripts.html"}
+	ITEM_EDIT_TEMPLATE_FILES = []string{"define_item.html", "head.html", "scripts.html"}
 
-	ITEM_LIST_TEMPLATES    *template.Template
-	ITEM_EDIT_TEMPLATES    *template.Template
-	ACCOUNT_EDIT_TEMPLATES *template.Template
+	ITEM_LIST_TEMPLATES *template.Template
+	ITEM_EDIT_TEMPLATES *template.Template
 
 	TEMPLATES_INITIALIZED = false
 )
@@ -108,15 +106,6 @@ type ItemForm struct {
 	CancelUrl    string
 	FormError    string
 	FormMessage  string
-	Unregistered bool
-}
-
-type AccountForm struct {
-	Title        string
-	ActiveTab    *ActiveTab
-	Account      *database.Account
-	CancelUrl    string
-	FormError    string
 	Unregistered bool
 }
 
@@ -277,12 +266,6 @@ func renderItemListTemplate(w http.ResponseWriter, p *ItemsPage) {
 func renderItemEditTemplate(w http.ResponseWriter, f *ItemForm) {
 	if TEMPLATES_INITIALIZED {
 		ITEM_EDIT_TEMPLATES.Execute(w, f)
-	}
-}
-
-func renderAccountEditTemplate(w http.ResponseWriter, a *AccountForm) {
-	if TEMPLATES_INITIALIZED {
-		ACCOUNT_EDIT_TEMPLATES.Execute(w, a)
 	}
 }
 
