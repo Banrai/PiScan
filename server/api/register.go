@@ -17,7 +17,8 @@ import (
 )
 
 const (
-	VERIFY_SENDER  = "openproductdata@saruzai.com"
+	SERVER_SENDER = "openproductdata@saruzai.com" // used by other email notifications
+
 	VERIFY_SUBJECT = "Please verify your email address"
 	VERIFY_MESSAGE = `<p>Thank you for registering to contribute to the Open Product Database.</p>
 <p>Please confirm your email address by clicking on this link:</p>
@@ -36,7 +37,7 @@ func SendVerificationEmail(server, email, code string, port int) error {
 	context := RegistrationLink{fmt.Sprintf("http://%s:%d", server, port), code}
 	err := t.Execute(&msg, context)
 	if err == nil {
-		sender := emailer.EmailAddress{Address: VERIFY_SENDER}
+		sender := emailer.EmailAddress{Address: SERVER_SENDER}
 		recipient := emailer.EmailAddress{Address: email}
 		err = emailer.Send(VERIFY_SUBJECT, msg.String(), "text/html", &sender, &recipient, []*emailer.EmailAttachment{})
 	}

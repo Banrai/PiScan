@@ -80,5 +80,13 @@ func main() {
 		api.Respond("application/json", "utf-8", contribute)(w, r)
 	}
 
+	// email items list to a user
+	handlers["/email/"] = func(w http.ResponseWriter, r *http.Request) {
+		fn := func(w http.ResponseWriter, r *http.Request) string {
+			return api.EmailSelectedItems(r, coords)
+		}
+		api.Respond("application/json", "utf-8", fn)(w, r)
+	}
+
 	api.NewAPIServer(host, port, api.DefaultServerReadTimeout, handlers)
 }
