@@ -83,14 +83,15 @@ $(function(){
 	    var target = $(this).attr('href');
 	    if( "/buyAMZN:us/" == target ) {
 		buyAmzUS("AMZN:us");
-	    } else {
-		var submitOk = true;
-		if( "/email/" == target ) {
-		    submitOk = checkAccountStatus( $('input[type=hidden]#account').val() );
-		}
-		if( submitOk ) {
+	    }  else {
+		var submitOk = function () {
 		    $('#bulkActions').attr('action', target);
 		    $("#bulkActions").submit();
+		};
+		if( "/email/" == target ) {
+		    checkAccountStatus( $('input[type=hidden]#account').val(), submitOk );
+		} else {
+		    submitOk();
 		}
 	    }
 	}

@@ -6,19 +6,22 @@ function showModal (title, header, message) {
 }
 
 function checkAccountStatus (accId) {
-    var result = false,
-	postData = { account: accId };
+    var fn = null;
+    if( arguments.length > 1 ) {
+	fn = arguments[1];
+    }
     $.ajax({type: "POST",
 	    url: "/status/",
-	    data: postData,
+	    data: { account: accId },
 	    dataType: "json",
 	    success: function (d) {
 		if( !d["msg"] || d["msg"] !== "true" || d["err"] ) {
 		    showModal("Warning", "Verification Pending", "Your email address is unverified. Please check your email for the link we sent you.");
 		} else {
-		    result = true;
+		    if( fn !== null ) {
+			fn();
+		    }
 		}
 	    }
 	   });
-    return result;
 }
