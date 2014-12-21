@@ -19,7 +19,7 @@ import (
 
 const (
 	// Default database filename
-	SQLITE_PATH = "/tmp"
+	SQLITE_PATH = "/data"
 	SQLITE_FILE = "PiScanDB.sqlite"
 
 	// Default sql definitions file
