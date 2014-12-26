@@ -12,6 +12,7 @@ import (
 	"github.com/Banrai/PiScan/client/database"
 	"github.com/mxk/go-sqlite/sqlite3"
 	"html/template"
+	"io/ioutil"
 	"net/http"
 	"path"
 	"strconv"
@@ -33,6 +34,8 @@ var (
 		return t
 	}
 
+	UNSUPPORTED_TEMPLATE_FILE = "browser_not_supported.html"
+
 	ITEM_LIST_TEMPLATE_FILES = []string{"items.html", "head.html", "navigation_tabs.html", "actions.html", "modal.html", "scripts.html"}
 	ITEM_EDIT_TEMPLATE_FILES = []string{"define_item.html", "head.html", "scripts.html"}
 
@@ -53,6 +56,18 @@ func Redirect(target string) http.HandlerFunc {
 func MakeHTMLHandler(fn func(http.ResponseWriter, *http.Request, database.ConnCoordinates, ...interface{}), db database.ConnCoordinates, opts ...interface{}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fn(w, r, db, opts...)
+	}
+}
+
+// Show the static template for unsupported browsers
+func UnsupportedBrowserHandler(templatesFolder string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := ioutil.ReadFile(path.Join(templatesFolder, UNSUPPORTED_TEMPLATE_FILE))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		fmt.Fprintf(w, string(body))
 	}
 }
 

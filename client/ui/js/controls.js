@@ -43,6 +43,9 @@ function buyAmzUS (targetClass) {
 }
 
 $(function(){
+    if( ! Modernizr.canvas || ! Modernizr.svg ) {
+	window.location.href = '/browser';
+    }
     $("#id_actions_chk").on("click", function() {
 	var state = $(this).is(':checked');
 	$(".chk_item").each(function() {

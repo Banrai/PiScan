@@ -61,6 +61,7 @@ func main() {
 		/* define the server handlers */
 		// dynamic request handlers: html
 		http.HandleFunc("/", ui.Redirect("/scanned/"))
+		http.HandleFunc("/browser", ui.UnsupportedBrowserHandler(templatesFolder))
 		http.HandleFunc("/scanned/", ui.MakeHTMLHandler(ui.ScannedItems, dbCoordinates))
 		http.HandleFunc("/favorites/", ui.MakeHTMLHandler(ui.FavoritedItems, dbCoordinates))
 		http.HandleFunc("/delete/", ui.MakeHTMLHandler(ui.DeleteItems, dbCoordinates))
@@ -78,6 +79,7 @@ func main() {
 		http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir(path.Join(templatesFolder, "../css/")))))
 		http.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir(path.Join(templatesFolder, "../js/")))))
 		http.Handle("/fonts/", http.StripPrefix("/fonts/", http.FileServer(http.Dir(path.Join(templatesFolder, "../fonts/")))))
+		http.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir(path.Join(templatesFolder, "../images/")))))
 
 		/* start the server */
 		log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil))

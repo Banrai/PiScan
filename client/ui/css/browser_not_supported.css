@@ -1,0 +1,76 @@
+
+/* css to present the 'your browser is not supported' warning page */
+
+.dialog {
+  background: rgba(0,0,0, 0.3);
+  border-radius: 0.625em;
+  -moz-border-radius: 0.625em;
+  -o-border-radius: 0.625em;
+  -webkit-border-radius: 0.625em;
+  display: inline-block;
+  padding: 0.625em;
+}
+
+.dialog .inner {
+  background: #F2F2F2;
+  border-radius: 0.3125em;
+  -moz-border-radius: 0.3125em;
+  -o-border-radius: 0.3125em;
+  -webkit-border-radius: 0.3125em;
+  box-shadow: 0 0 0.2em rgba(0,0,0, 0.5);
+  -moz-box-shadow: 0 0 0.2em rgba(0,0,0, 0.5);
+  -o-box-shadow: 0 0 0.2em rgba(0,0,0, 0.5);
+  -webkit-box-shadow: 0 0 0.2em rgba(0,0,0, 0.5);
+  text-align: left;
+}
+
+.dialog .content {
+  overflow: hidden;
+  padding: 0 1.25em 1.25em 1.25em;
+  width: auto;
+}
+
+.dialog p {
+  font-size: 1.2em;
+}
+
+.dialog p a,
+.dialog p a:link
+
+#browser-not-supported-dialog .inner {
+  width: 33em;
+}
+
+#browser-not-supported-dialog p {
+  padding-bottom: 0;
+}
+
+#browser-not-supported-dialog ul {
+  height: 7.5em;
+  text-align: center;
+}
+
+#browser-not-supported-dialog li {
+  display: inline-block;
+}
+
+#browser-not-supported-dialog li a {
+  background: url("/images/browser-icons.png") left center no-repeat;
+  display: block;
+  height: 4.5em;
+  margin: 2.25em;
+  width: 4em;
+}
+
+#browser-not-supported-dialog li.ff a {
+  background-position: -4em center;
+}
+
+#browser-not-supported-dialog li.opera a {
+  background-position: -8em center;
+}
+
+#browser-not-supported-dialog li.safari a {
+  background-position: -12em center;
+}
+
