@@ -107,7 +107,7 @@ func EditAccount(w http.ResponseWriter, r *http.Request, dbCoords database.ConnC
 							hmac := digest.GenerateDigest(emailVal[0], v.Encode())
 							v.Set("hmac", hmac)
 
-							res, err := http.Get(strings.Join([]string{defineApiServer(apiHost), "/register?", v.Encode()}, ""))
+							res, err := http.Get(strings.Join([]string{apiHost, "/register?", v.Encode()}, ""))
 							if err == nil {
 								res.Body.Close()
 							}
@@ -174,7 +174,7 @@ func ConfirmServerAccount(r *http.Request, dbCoords database.ConnCoordinates, op
 							v.Set("hmac", hmac)
 
 							// ping the API Server for the status of this account
-							res, resErr := http.Get(strings.Join([]string{defineApiServer(apiHost), "/status?", v.Encode()}, ""))
+							res, resErr := http.Get(strings.Join([]string{apiHost, "/status?", v.Encode()}, ""))
 							defer res.Body.Close()
 							if resErr != nil {
 								ack.Error = resErr.Error()

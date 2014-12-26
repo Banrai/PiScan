@@ -81,11 +81,6 @@ func MakeHandler(fn func(*http.Request, database.ConnCoordinates, ...interface{}
 	}
 }
 
-// Standardize how the API Server string is generated
-func defineApiServer(apiHost string) string {
-	return fmt.Sprintf("http://%s", apiHost)
-}
-
 /* JSON response struct */
 type AjaxAck struct {
 	Message string `json:"msg"`

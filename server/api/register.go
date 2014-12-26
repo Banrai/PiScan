@@ -34,7 +34,7 @@ type RegistrationLink struct {
 func SendVerificationEmail(server, email, code string, port int) error {
 	var msg bytes.Buffer
 	t := template.Must(template.New("VERIFY_MESSAGE").Parse(VERIFY_MESSAGE))
-	context := RegistrationLink{fmt.Sprintf("http://%s:%d", server, port), code}
+	context := RegistrationLink{fmt.Sprintf("%s:%d", server, port), code}
 	err := t.Execute(&msg, context)
 	if err == nil {
 		sender := emailer.EmailAddress{Address: SERVER_SENDER}

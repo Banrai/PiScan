@@ -12,7 +12,7 @@ import (
 
 const (
 	// API server definitions
-	apiServer = ""
+	apiServer = "https://saruzai.com"
 	apiPort   = 9001
 
 	// Coordinates for the POD db clone (mysql) on this server

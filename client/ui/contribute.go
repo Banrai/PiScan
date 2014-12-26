@@ -119,7 +119,7 @@ func InputUnknownItem(w http.ResponseWriter, r *http.Request, dbCoords database.
 								hmac := digest.GenerateDigest(acc.APICode, v.Encode())
 								v.Set("hmac", hmac)
 
-								res, err := http.PostForm(strings.Join([]string{defineApiServer(apiHost), "/contribute/"}, ""), v)
+								res, err := http.PostForm(strings.Join([]string{apiHost, "/contribute/"}, ""), v)
 								if err == nil {
 									res.Body.Close()
 								}

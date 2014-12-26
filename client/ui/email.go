@@ -84,7 +84,7 @@ func EmailItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCo
 									hmac := digest.GenerateDigest(acc.APICode, v.Encode())
 									v.Set("hmac", hmac)
 
-									res, err := http.PostForm(strings.Join([]string{defineApiServer(apiHost), "/email/"}, ""), v)
+									res, err := http.PostForm(strings.Join([]string{apiHost, "/email/"}, ""), v)
 									if err == nil {
 										res.Body.Close()
 									}
