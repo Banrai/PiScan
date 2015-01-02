@@ -8,6 +8,16 @@ The client datastore is a simple [SQLite](http://sqlite.org/) database file, con
 
 1. Create a bootable SD card using the [Raspbian download](http://www.raspberrypi.org/downloads/), following the [image installation guide](http://www.raspberrypi.org/documentation/installation/installing-images/README.md) for your OS
 
+  Under linux, this involves using the [dd](http://linux.die.net/man/1/dd) command to copy the unzipped Raspbian img file onto a newly unmounted micro SD card:
+
+  ```sh
+# umount /dev/sdb1 # use df or fdisk -l to determine SD card location
+# dd bs=4M if=/opt/downloads/2014-12-24-wheezy-raspbian.img of=/dev/sdb
+# sync
+  ```
+
+  Eject the SD card, remove it from its adapter, and install the micro SD card in the Pi (push click to confirm). The Pi is now ready to be booted for the first time.
+
 2. Boot the Pi for the first time
 
   Connect with either an HDMI monitor and keyboard, or ssh terminal, if also using an ethernet cable to connect to a local network.
@@ -130,7 +140,13 @@ fdisk /dev/[DEVICE]
 pi@raspberrypi ~ $ sudo mkdir /data
   ```
 
-  Use <tt>fdisk -l</tt> to confirm where the usb device appears. If this is the first and only external usb storage device, it *should* be <tt>/dev/sda1</tt> but double-check before updating the <tt>/etc/fstab</tt> file.
+  Use <tt>fdisk -l</tt> to confirm where the usb device appears. If this is the first and only external usb storage device, it *should* be <tt>/dev/sda1</tt> but double-check before mounting and updating the <tt>/etc/fstab</tt> file.
+
+  Mount the external drive to <tt>/data</tt> with this command:
+
+  ```sh
+pi@raspberrypi ~ $ sudo mount -t ext4 /dev/sda1 /data
+   ```
 
   Next, update <tt>/etc/fstab</tt> so the usb drive is mounted to <tt>/data</tt> on boot.
 
@@ -151,7 +167,7 @@ pi@raspberrypi ~ $ sudo diff /etc/fstab /etc/fstab.bak
 < tmpfs    /var/log    tmpfs    defaults,noatime,nosuid,mode=0755,size=100m    0 0
 < tmpfs    /var/run    tmpfs    defaults,noatime,nosuid,mode=0755,size=2m    0 0
 < tmpfs    /var/spool/mqueue    tmpfs    defaults,noatime,nosuid,mode=0700,gid=12,size=30m    0 0
-< # make sure our external usb drive (BDB data) is mounted on boot
+< # make sure our external usb drive is mounted on boot
 < /dev/sda1       /data        ext4   rw,exec,auto,users    0  1
   ```
 
@@ -181,11 +197,40 @@ total 16
 drwx------ 2 pi pi 16384 Aug 27 19:49 lost+found
   ```
 		
-5. Install [Go on the Raspberry Pi](http://dave.cheney.net/2012/09/25/installing-go-on-the-raspberry-pi)
+5. Optional: wifi setup
+
+  If you purchased a usb wifi dongle, it is a good idea to configure it so that it will attach to the desired wifi access point on boot.
+
+  Set your access point configuration using either the [built-in graphical interface](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-3-network-setup/setting-up-wifi-with-raspbian) or install [wicd-curses](http://sourceforge.net/projects/wicd/):
+
+  ```sh
+pi@raspberrypi ~ $ sudo apt-get install wicd-curses
+pi@raspberrypi ~ $ sudo wicd-curses
+  ```
+	
+	The <tt>wicd-curses</tt> tool presents an [easy to use menu](http://windowslinuxcommands.blogspot.com/2013/06/raspberry-pis-new-wifi-manager-friend.html) to set the access point and password.
 
 ## Installation
 
-1. The client code uses these Go packages:
+Use either (a)the [included ARM binaries](../binaries/linux/arm); or (b) build them from source directly on the Pi.
+
+### (a) Install the client binaries 
+
+  Copy the [PiScanner](../binaries/linux/arm/PiScanner) and [WebApp](../binaries/linux/arm/WebApp) files from this repo into anywhere under the <tt>/home/pi</tt> folder.
+
+  The simplest way is to use the [scp command](http://linux.die.net/man/1/scp) like this (replace <tt>192.168.1.108</tt> with the actual IP address of your Pi on your network):
+
+  ```sh
+  cd binaries/linux/arm
+  scp PiScanner pi@192.168.1.108:/home/pi
+  scp WebApp pi@192.168.1.108:/home/pi
+  ```
+
+### (b) Install from source
+
+1.  Install [Go on the Raspberry Pi](http://dave.cheney.net/2012/09/25/installing-go-on-the-raspberry-pi)
+
+2. The client code uses these Go packages:
 
   ```sh
 go get github.com/mxk/go-sqlite/sqlite3
@@ -197,11 +242,11 @@ go get github.com/Banrai/PiScan
 
   ```sh
 package github.com/Banrai/PiScan
-	imports github.com/Banrai/PiScan
-	imports github.com/Banrai/PiScan: no buildable Go source files in /home/pi/go-workspace/src/github.com/Banrai/PiScan
+imports github.com/Banrai/PiScan
+imports github.com/Banrai/PiScan: no buildable Go source files in /home/pi/go-workspace/src/github.com/Banrai/PiScan
   ```
 
-2. Build the client binaries:
+3. Build the client binaries:
 
   ```sh
 cd $GOPATH/src/github.com/Banrai/PiScan
@@ -212,24 +257,60 @@ make clients
 
   This guide will run them from where they are built, i.e., <tt>$GOPATH/src/github.com/Banrai/PiScan/client</tt>.
 
-3. Initialize the local client database
+### Post Install Configuration
 
-  Before either the <tt>PiScanner</tt> or <tt>WebApp</tt> binaries can be run in normal mode, the local client sqlite database should be created.
+1. Initialize the local client database
 
-  Run this command just once:
-
-  ```sh
-$GOPATH/src/github.com/Banrai/PiScan/client/PiScanner -sqliteTables $GOPATH/src/github.com/Banrai/PiScan/client/database
-  ```
-
-  The default target folder is <tt>/data</tt> on the Raspberry Pi, but that can be changed using the <tt>-sqlitePath</tt> command line argument when running the command above.
-
-  If successful, the system will respond with a message like this:
+  Copy the [PiScanDB.sqlite](PiScanDB.sqlite) file from this repo into the <tt>/data</tt> folder on your Pi:
 
   ```sh
-2014/12/21 00:23:48 Client database 'PiScanDB.sqlite' created in '/data'
+  scp PiScanDB.sqlite pi@192.168.1.108:/data
   ```
 
-## Running the client code
+2. Copy the client template folders under the [ui](ui) folder onto the Pi (these are required for the [WebApp](../binaries/linux/arm/WebApp) to run).
 
-  *[coming soon: need to add init.d scripts]*
+  The simplest way is to create a single [tar](http://linux.die.net/man/1/tar) archive, use scp to copy it, and then unpack it on the Pi:
+
+  ```sh
+  cd client/ui; tar cf /tmp/webapp_templates.tar fonts images js css templates
+  scp /tmp/webapp_templates.tar pi@192.168.1.108:/home/pi
+  ```
+
+  On the Pi itself, unpack the file under its own folder, <tt>/home/pi/ui</tt>, or elsewhere:
+
+  ```sh
+pi@raspberrypi ~ $ mkdir ui
+pi@raspberrypi ~ $ mv webapp_templates.tar ui
+pi@raspberrypi ~ $ cd ui
+pi@raspberrypi ~/ui $ tar xf webapp_templates.tar
+pi@raspberrypi ~/ui $ rm webapp_templates.tar
+  ```
+
+3. PiScanner and WebApp startup scripts
+
+  Copy the [init.d scripts](init.d) to the Pi:
+
+  ```sh
+cd client/init.d
+scp webapp.sh pi@192.168.1.108:/tmp
+scp scanner.sh pi@192.168.1.108:/tmp
+  ```
+
+  Then, on the Pi, install them under <tt>/etc/init.d</tt> with the correct permissions.
+
+  First, for the PiScanner application:
+
+  ```sh
+pi@raspberrypi ~ $ sudo mv /tmp/scanner.sh /etc/init.d
+pi@raspberrypi ~ $ sudo chmod 755 /etc/init.d/scanner.sh
+pi@raspberrypi ~ $ sudo update-rc.d scanner.sh defaults
+  ```
+
+  Then the WebApp (client web server) application:
+
+  ```sh
+pi@raspberrypi ~ $ sudo mv /tmp/webapp.sh /etc/init.d
+pi@raspberrypi ~ $ sudo chmod 755 /etc/init.d/webapp.sh
+pi@raspberrypi ~ $ sudo update-rc.d webapp.sh defaults
+  ```
+

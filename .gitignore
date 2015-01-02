@@ -2,7 +2,7 @@
 *.swp
 *.pyc
 .DS_Store
-APIServer
-PiScanner
-WebApp
+server/APIServer
+client/PiScanner
+client/WebApp
 amazon_local_settings.py

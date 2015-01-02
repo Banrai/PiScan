@@ -13,7 +13,7 @@
 
 CREATE TABLE book (
 	id        binary(16) primary key NOT NULL,
-	title     varchar(1024) NOT NULL,
+	title     varchar(512) NOT NULL,
 	isbn      varchar(13) NOT NULL,
 	is_isbn10 boolean DEFAULT false,
 	src       varchar(32) NOT NULL DEFAULT 'OL', -- open library
@@ -29,7 +29,7 @@ CREATE TRIGGER book_on_insert BEFORE INSERT ON `book`
 
 CREATE TABLE author (
 	id        binary(16) primary key NOT NULL,
-	full_name varchar(1024) NOT NULL,
+	full_name varchar(512) NOT NULL,
 	src       varchar(32) NOT NULL DEFAULT 'OL', -- open library
 	src_id    varchar(64) -- a unique identifier from the source (if present)
 );
