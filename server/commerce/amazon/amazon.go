@@ -14,9 +14,9 @@ import (
 	"encoding/json"
 	"github.com/Banrai/PiScan/server/commerce"
 	"github.com/Banrai/PiScan/server/database/barcodes"
+	"os"
 	"os/exec"
 	"path"
-	"runtime"
 	"strings"
 )
 
@@ -24,14 +24,10 @@ import (
 // amazon_api_lookup.py script using os/exec and returns the string result
 // and error (if any) as-is
 func apiLookup(barcode string) (string, error) {
-
-	// find the path of the calling binary
-	_, filename, _, _ := runtime.Caller(1)
-
-	// for now, the path to the API lookup script is relative to the source root
+	// the path to the API lookup script is relative to where the server runs
 	// so pass the barcode string to it as the first command line argument and
 	// capture and return the result
-	lookupCmd := []string{"python", path.Join(path.Dir(filename), "/amazon_api_lookup.py"), barcode}
+	lookupCmd := []string{"python", path.Join(path.Dir(os.Args[0]), "/commerce/amazon/amazon_api_lookup.py"), barcode}
 	cmd := exec.Command(lookupCmd[0], lookupCmd[1:]...)
 
 	var out bytes.Buffer
