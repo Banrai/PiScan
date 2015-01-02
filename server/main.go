@@ -12,7 +12,7 @@ import (
 
 const (
 	// API server definitions
-	apiServer = "https://saruzai.com"
+	apiServer = "saruzai.com"
 	apiPort   = 9001
 
 	// Coordinates for the POD db clone (mysql) on this server
@@ -67,7 +67,7 @@ func main() {
 	// respond to account status requests
 	handlers["/status"] = func(w http.ResponseWriter, r *http.Request) {
 		register := func(w http.ResponseWriter, r *http.Request) string {
-			return api.GetAccountStatus(r, coords, host, port)
+			return api.GetAccountStatus(r, coords)
 		}
 		api.Respond("application/json", "utf-8", register)(w, r)
 	}
