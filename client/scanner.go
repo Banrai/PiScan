@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	apiServerHost = "https://saruzai.com"
+	apiServerHost = "http://saruzai.com"
 	apiServerPort = 9001
 )
 
