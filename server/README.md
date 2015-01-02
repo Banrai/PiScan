@@ -1,8 +1,12 @@
 The server components run on a separate machine/network and support the functions of the Raspberry Pi scanner, particularly the barcode lookup.
 
-The server runs a [MySQL](http://www.mysql.com/) database, which is a clone of the last available [Open Product Data](http://product.okfn.org/) (POD) data, with [additional tables](database) for logging user contributions.
+By default, the Pi client talks to the API service on the [saruzai.com](https://saruzai.com/) server, which runs a [MySQL](http://www.mysql.com/) database clone of the last available [Open Product Data](http://product.okfn.org/) (POD) data, along with [additional tables](database) for logging user contributions.
+
+If you do not wish to participate in that project, you can build and run your own server instead, by following these instructions.
 
 ## Initial server preparation
+
+These instructions assume the underlying OS is [debian linux](http://debian.org/). If you want to use something else, you will need to make the necessary pkg and configuration changes.
 
 1. Basic packages using [apt](http://linux.die.net/man/8/apt-get) as root/sudo:
 
@@ -42,6 +46,49 @@ WITH GRANT OPTION;
 FLUSH PRIVILEGES;
   ```
 
+  *Note that while full POD database file (<tt>pod_web_2014.01.01_01.sql.gz</tt>) was available until recently at <tt>http://www.product-open-data.com/</tt> that site has gone dark suddenly, and it now points to a suspicious site with a bad certificate. If you want a copy of the original POD database without any user contributions from the Saruzai Open Data project, please [contact us](http://banrai.com/contact.html).*
+
 ## Server application installation
 
-[to be continued]
+*These steps are for the [saruzai.com](https://saruzai.com/) server; please change your domain or IP address accordingly.*
+
+1. Prepare the server environment
+
+  As the <tt>pod</tt> user:
+
+  ```sh
+$ cd /home/pod
+$ mkdir -p server/commerce/amazon/
+  ```
+
+2. Copy the Amazon API scripts
+
+  ```sh
+scp server/commerce/amazon/*.py pod@saruzai.com:/home/pod/server/commerce/amazon
+  ```
+
+  Optionally, login as the <tt>pod</tt> user and create a <tt>amazon_local_settings.py</tt> file, which defines your own Amazon API coordinates.
+
+  ```sh
+$ cd server/commerce/amazon/
+$ vi amazon_local_settings.py
+  ```
+
+  As [described here](commerce/amazon/amazon_settings.py), the <tt>amazon_local_settings.py</tt> file overrides the default (empty) settings for the access and secret keys.
+
+3. Copy the APIServer binary to the server
+
+  ```sh
+cd binaries/linux/amd64
+scp APIServer pod@saruzai.com:/home/pod/server
+  ```
+
+4. Run the APIServer
+
+  Login as the <tt>pod</tt> user and run with the defaults (for your own, non-saruzai.com server, use the <tt>-host</tt> argument with your domain or IP address) under a [screen](http://linux.die.net/man/1/screen) session
+
+  ```sh
+$ /home/pod/server/APIServer
+  ```
+
+  [to-do: init.d script to run automatically on reboot, to dispense with screen]
