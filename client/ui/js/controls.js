@@ -46,6 +46,7 @@ $(function(){
     if( ! Modernizr.canvas || ! Modernizr.svg ) {
 	window.location.href = '/browser';
     }
+    $('a.shutdown').click(confirmShutdown);
     $("#id_actions_chk").on("click", function() {
 	var state = $(this).is(':checked');
 	$(".chk_item").each(function() {

@@ -1,4 +1,5 @@
 $(function(){
+    $('a.shutdown').click(confirmShutdown);
     $('a.update').click(function(event){
         event.preventDefault();
         var toggleId = $(this).attr('href');
