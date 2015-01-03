@@ -83,12 +83,19 @@ cd binaries/linux/amd64
 scp APIServer pod@saruzai.com:/home/pod/server
   ```
 
-4. Run the APIServer
+4. APIServer startup script
 
-  Login as the <tt>pod</tt> user and run with the defaults (for your own, non-saruzai.com server, use the <tt>-host</tt> argument with your domain or IP address) under a [screen](http://linux.die.net/man/1/screen) session
-
+  Copy the [api-server.sh](init.d/api-server.sh) script to the server:
+ 
   ```sh
-$ /home/pod/server/APIServer
+cd server/init.d
+scp api-server.sh pod@saruzai.com:/tmp                                                     
   ```
 
-  [to-do: init.d script to run automatically on reboot, to dispense with screen]
+  Then, as root/sudo, move it to <tt>/etc/init.d</tt> with the correct permissions, and install via <tt>update-rc.d</tt> to start automatically on boot:
+
+  ```sh
+# mv /tmp/api-server.sh /etc/init.d
+# chmod 755 /etc/init.d/api-server.sh
+# update-rc.d api-server.sh defaults
+  ```

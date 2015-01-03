@@ -212,7 +212,7 @@ pi@raspberrypi ~ $ sudo wicd-curses
 
 ## Installation
 
-Use either (a)the [included ARM binaries](../binaries/linux/arm); or (b) build them from source directly on the Pi.
+Use either (a) the [included ARM binaries](../binaries/linux/arm); or (b) build them from source directly on the Pi.
 
 ### (a) Install the client binaries 
 
