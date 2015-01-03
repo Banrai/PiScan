@@ -7,10 +7,11 @@
      <!-- tabs (inner) -->
      <div class="row">
       <div class="col-xs-12 col-sm-8">
-       <ul class="nav nav-tabs" role="tablist">
-        <li{{if .Scanned}} class="active"{{end}}><a href="/scanned/"><i class="fa fa-barcode"></i> Scanned</a></li>
-        <li{{if .Favorites}} class="active"{{end}}><a href="/favorites/"><i class="fa fa-star-o"></i> Favorites</a></li>
-        <li{{if .Account}} class="active"{{end}}><a href="/account/"><i class="fa fa-user"></i> Account</a></li>
+	<ul class="nav nav-tabs" role="tablist">
+	  <li><a href="/scanned/"><i class="fa fa-refresh"></i></a></li>
+	  <li{{if .Scanned}} class="active"{{end}}><a href="/scanned/"><i class="fa fa-barcode"></i> Scanned</a></li>
+	  <li{{if .Favorites}} class="active"{{end}}><a href="/favorites/"><i class="fa fa-star-o"></i> Favorites</a></li>
+	  <li{{if .Account}} class="active"{{end}}><a href="/account/"><i class="fa fa-user"></i> Account</a></li>
        </ul>
       </div>
      </div>
