@@ -2,28 +2,25 @@
 
 ## About
 
-This is a personal shopping and inventory-tracking device based on the [Raspberry Pi](http://www.raspberrypi.org/) and off-the-shelf [usb](https://en.wikipedia.org/wiki/USB) barcode scanners.
+This is a personal shopping and inventory-tracking device based on the [Raspberry Pi](http://www.raspberrypi.org/) and off-the-shelf [usb](https://en.wikipedia.org/wiki/USB) barcode scanners, with an option to share and contribute to the [Open Product Data](http://product.okfn.org/) (POD) database of product barcodes, as part of the [Saruzai Open Data](https://saruzai.com/) project.
 
 ## Installation
 
 ### Quickstart (for the impatient)
 
-   ```sh
-go get github.com/mxk/go-sqlite/sqlite3
-go get github.com/go-sql-driver/mysql
-go get github.com/Banrai/PiScan
-cd $GOPATH/src/github.com/Banrai/PiScan
-make all
-   ```
+Copy or download the [pre-built ARM binaries](client#a-install-the-client-binaries) onto your Raspberry Pi (runnning the [Raspbian OS](http://www.raspberrypi.org/downloads/)), and complete the [post-install instructions](client#post-install-configuration).
 
 ### More detailed instructions
 
-1. [Client device](client/README.md) (Raspberry Pi + barcode scanner)
+1. Build your [Raspberry Pi client](client/README.md) from the ground up, either by:
+    * [building from source](client#b-install-from-source); or
+    * using the [pre-built ARM binaries](client#a-install-the-client-binaries) 
 
-2. [Server](server/README.md)
+2. [Run your own API server](server/README.md) *(optional, if you do not wish to share and contribute to the barcode data project)*
 
 ## Usage
 
+[screenshots + video]
 
 ### Acknowledgements
 
