@@ -62,6 +62,7 @@ func main() {
 		// dynamic request handlers: html
 		http.HandleFunc("/", ui.Redirect("/scanned/"))
 		http.HandleFunc("/browser", ui.UnsupportedBrowserHandler(templatesFolder))
+		http.HandleFunc("/shutdown/", ui.ShutdownClientHandler())
 		http.HandleFunc("/scanned/", ui.MakeHTMLHandler(ui.ScannedItems, dbCoordinates))
 		http.HandleFunc("/favorites/", ui.MakeHTMLHandler(ui.FavoritedItems, dbCoordinates))
 		http.HandleFunc("/delete/", ui.MakeHTMLHandler(ui.DeleteItems, dbCoordinates))

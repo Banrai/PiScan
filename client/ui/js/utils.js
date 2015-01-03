@@ -41,7 +41,7 @@ function showConfirmModal (title, header, message, continueAction) {
     $('#modalMessageHeader').text(header);
     $('#modalMessage').text(message);
     $('#modalContinue').show();
-    $('#modalContinue').attr('href', continueAction); console.log(continueAction);
+    $('#modalContinue').attr('href', continueAction); 
     if( continueButton !== null ) {
 	$('#modalContinueButton').text(continueButton);
     }
