@@ -17,13 +17,15 @@ func doShutdown() (string, error) {
 	// which, if successful, it will be the standard system message. This
 	// works on the pi b/c the default user has sudo privilege; on another
 	// client device, this needs to be changed, else a sudoers update is needed.
-	shutdownCmd := []string{"sudo", "shutdown", "-h", "now"}
+	shutdownCmd := []string{"sudo", "poweroff"}
 	cmd := exec.Command(shutdownCmd[0], shutdownCmd[1:]...)
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()
 
+	fmt.Printf("Shutdown stdout: %s\n", out.String())
+	fmt.Printf("Shutdown stderr: %s\n", err.Error())
 	return out.String(), err
 }
 
