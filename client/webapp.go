@@ -21,7 +21,7 @@ const (
 	SERVER_PORT = 8080
 
 	// API server constants (remote server)
-	API_HOST = "http://saruzai.com"
+	API_HOST = "https://api.saruzai.com"
 	API_PORT = 9001
 
 	// non-html mime types (ajax replies)
