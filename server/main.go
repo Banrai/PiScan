@@ -88,5 +88,5 @@ func main() {
 		api.Respond("application/json", "utf-8", fn)(w, r)
 	}
 
-	api.NewAPIServer(host, port, api.DefaultServerReadTimeout, handlers)
+	api.NewAPIServer(host, api.DefaultServerTransport, port, api.DefaultServerReadTimeout, handlers)
 }

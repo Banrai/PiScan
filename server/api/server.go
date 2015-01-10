@@ -9,15 +9,18 @@ import (
 	"github.com/Banrai/PiScan/server/database/barcodes"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
+	"net"
 	"net/http"
+	"net/http/fcgi"
 	"os"
 	"time"
 )
 
 type Server struct {
-	mux    *http.ServeMux
-	s      *http.Server
-	Logger *log.Logger
+	mux       *http.ServeMux
+	s         *http.Server
+	Logger    *log.Logger
+	Transport string
 }
 
 type DBConnection struct {
@@ -35,6 +38,7 @@ type SimpleMessage struct {
 var (
 	Srv                      *Server
 	DefaultServerReadTimeout = 30 // in seconds
+	DefaultServerTransport   = "tcp"
 )
 
 func WithServerDatabase(dbCoords DBConnection, fn func(map[string]*sql.Stmt)) {
@@ -83,7 +87,8 @@ func Respond(mediaType string, charset string, fn func(w http.ResponseWriter, r 
 	}
 }
 
-func NewAPIServer(host string, port int, timeout int, handlers map[string]func(http.ResponseWriter, *http.Request)) {
+// NewAPIServer uses the map of handlers to respond to incoming FastCGI requests on the specific host, port, and transport
+func NewAPIServer(host, transport string, port, timeout int, handlers map[string]func(http.ResponseWriter, *http.Request)) {
 	mux := http.NewServeMux()
 	for pattern, handler := range handlers {
 		mux.Handle(pattern, http.HandlerFunc(handler))
@@ -94,9 +99,16 @@ func NewAPIServer(host string, port int, timeout int, handlers map[string]func(h
 		ReadTimeout: time.Duration(timeout) * time.Second, // to prevent abuse of "keep-alive" requests by clients
 	}
 	Srv = &Server{
-		mux:    mux,
-		s:      s,
-		Logger: log.New(os.Stdout, "", log.Ldate|log.Ltime),
+		mux:       mux,
+		s:         s,
+		Logger:    log.New(os.Stdout, "", log.Ldate|log.Ltime),
+		Transport: transport,
 	}
-	Srv.s.ListenAndServe()
+
+	// create a listener for the incoming FastCGI requests
+	listener, err := net.Listen(Srv.Transport, Srv.s.Addr)
+	if err != nil {
+		Srv.Logger.Fatal(err)
+	}
+	fcgi.Serve(listener, Srv.mux)
 }
