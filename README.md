@@ -8,7 +8,7 @@ This is a personal shopping and inventory-tracking device based on the [Raspberr
 
 ### Quickstart (for the impatient)
 
-Copy or download the [pre-built ARM binaries](client#a-install-the-client-binaries) onto your Raspberry Pi (runnning the [Raspbian OS](http://www.raspberrypi.org/downloads/)), and complete the [post-install instructions](client#post-install-configuration).
+Copy or download the pre-built ARM binaries onto your Raspberry Pi (runnning the [Raspbian OS](http://www.raspberrypi.org/downloads/)), and complete the [post-install instructions](client#post-install-configuration).
 
 ### More detailed instructions
 

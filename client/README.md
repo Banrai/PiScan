@@ -69,6 +69,7 @@ pi@raspberrypi ~ $ sudo diff /etc/fstab /etc/fstab.bak
 
   ```sh
 pi@raspberrypi ~ $ sudo swapoff --all
+pi@raspberrypi ~ $ sudo dphys-swapfile swapoff --all
   ```
 
   To prevent swap from coming back after rebooting, remove the [dphys-swapfile](http://neil.franklin.ch/Projects/dphys-swapfile/) package entirely:
@@ -201,7 +202,7 @@ drwx------ 2 pi pi 16384 Aug 27 19:49 lost+found
 
   If you purchased a usb wifi dongle, it is a good idea to configure it so that it will attach to the desired wifi access point on boot.
 
-  Set your access point configuration using either the [built-in graphical interface](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-3-network-setup/setting-up-wifi-with-raspbian) or install [wicd-curses](http://sourceforge.net/projects/wicd/):
+  Set your access point configuration using either the [built-in graphical interface](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-3-network-setup/setting-up-wifi-with-raspbian), [edit /etc/network/interfaces manually](https://gist.github.com/dpapathanasiou/4599fbae0640aceb598b#editing-etcnetworkinterfaces), or install [wicd-curses](http://sourceforge.net/projects/wicd/):
 
   ```sh
 pi@raspberrypi ~ $ sudo apt-get install wicd-curses
@@ -212,11 +213,11 @@ pi@raspberrypi ~ $ sudo wicd-curses
 
 ## Installation
 
-Use either (a) the [included ARM binaries](../binaries/linux/arm); or (b) build them from source directly on the Pi.
+Use either (a) the included ARM binaries; or (b) build them from source directly on the Pi.
 
 ### (a) Install the client binaries 
 
-  Copy the [PiScanner](../binaries/linux/arm/PiScanner) and [WebApp](../binaries/linux/arm/WebApp) files from this repo into anywhere under the <tt>/home/pi</tt> folder.
+  Copy the PiScanner and WebApp files and put them anywhere under the <tt>/home/pi</tt> folder.
 
   The simplest way is to use the [scp command](http://linux.die.net/man/1/scp) like this (replace <tt>192.168.1.108</tt> with the actual IP address of your Pi on your network):
 
