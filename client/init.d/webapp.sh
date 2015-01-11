@@ -12,7 +12,7 @@
 case "$1" in
   start)
     echo "Starting WebApp"
-    /home/pi/WebApp -templates /home/pi/ui/templates 
+    /home/pi/WebApp -templates /home/pi/ui/templates >> /home/pi/WebApp.log 2>&1
     ;;
   stop)
     echo "Stopping WebApp"

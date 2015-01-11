@@ -12,7 +12,7 @@
 case "$1" in
   start)
     echo "Starting PiScanner"
-    /home/pi/PiScanner
+    /home/pi/PiScanner >> /home/pi/PiScanner.log 2>&1
     ;;
   stop)
     echo "Stopping PiScanner"

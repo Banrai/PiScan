@@ -130,6 +130,7 @@ func main() {
 			log.Fatal(e)
 		}
 
+		log.Println(fmt.Sprintf("Starting the scanner %s", device))
 		scanner.ScanForever(device, processScanFn, errorFn)
 	}
 }

@@ -83,6 +83,7 @@ func main() {
 		http.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir(path.Join(templatesFolder, "../images/")))))
 
 		/* start the server */
+		log.Println(fmt.Sprintf("Starting the WebApp %s", fmt.Sprintf("%s:%d", host, port)))
 		log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil))
 	}
 }
