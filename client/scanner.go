@@ -20,7 +20,7 @@ import (
 
 const (
 	apiServerHost = "https://api.saruzai.com"
-	apiServerPort = 9001
+	apiServerPort = 443
 )
 
 func main() {
