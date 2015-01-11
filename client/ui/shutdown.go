@@ -24,8 +24,6 @@ func doShutdown() (string, error) {
 	cmd.Stdout = &out
 	err := cmd.Run()
 
-	fmt.Printf("Shutdown stdout: %s\n", out.String())
-	fmt.Printf("Shutdown stderr: %s\n", err.Error())
 	return out.String(), err
 }
 
