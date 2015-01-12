@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"github.com/Banrai/PiScan/server/api"
@@ -12,8 +13,11 @@ import (
 
 const (
 	// API server definitions
-	apiServer = "saruzai.com"
-	apiPort   = 9001
+	apiServer       = "saruzai.com"
+	apiPort         = 9001
+	apiSubdomain    = "api"
+	apiSSL          = true
+	apiExternalPort = 443
 
 	// Coordinates for the POD db clone (mysql) on this server
 	barcodeDBUser   = "pod"
@@ -24,8 +28,9 @@ const (
 
 func main() {
 	var (
-		dbUser, dbPass, dbHost, host string
-		dbPort, port                 int
+		dbUser, dbPass, dbHost, host, subdomain string
+		dbPort, port, externalPort              int
+		useSSL                                  bool
 	)
 
 	flag.StringVar(&dbUser, "dbUser", barcodeDBUser, fmt.Sprintf("The barcodes database user (defaults to '%s')", barcodeDBUser))
@@ -33,10 +38,33 @@ func main() {
 	flag.StringVar(&dbHost, "dbHost", barcodeDBServer, fmt.Sprintf("The barcodes database server (defaults to '%s')", barcodeDBServer))
 	flag.IntVar(&dbPort, "dbPort", barcodeDBPort, fmt.Sprintf("The barcodes database port (defaults to '%d')", barcodeDBPort))
 	flag.StringVar(&host, "host", apiServer, fmt.Sprintf("The hostname or IP address of the API server (defaults to '%s')", apiServer))
-	flag.IntVar(&port, "port", apiPort, fmt.Sprintf("The API server port (defaults to '%d')", apiPort))
+	flag.IntVar(&port, "port", apiPort, fmt.Sprintf("The internal API server port (defaults to '%d')", apiPort))
+	flag.StringVar(&subdomain, "subdomain", apiSubdomain, fmt.Sprintf("The external subdomain of the API server (defaults to '%s')", apiSubdomain))
+	flag.BoolVar(&useSSL, "ssl", apiSSL, fmt.Sprintf("Does the API server use SSL? (defaults to '%t')", apiSSL))
+	flag.IntVar(&externalPort, "extPort", apiExternalPort, fmt.Sprintf("The external API server port (defaults to '%d')", apiExternalPort))
 	flag.Parse()
 
 	coords := api.DBConnection{Host: dbHost, User: dbUser, Pass: dbPass, Port: dbPort}
+
+	// define the external-facing API server link
+	// for email confirmations, etc.
+	var buffer bytes.Buffer
+	buffer.WriteString("http")
+	if useSSL {
+		buffer.WriteString("s")
+	}
+	buffer.WriteString("://")
+	if len(subdomain) > 0 {
+		buffer.WriteString(subdomain)
+		buffer.WriteString(".")
+	}
+	buffer.WriteString(host)
+	if !useSSL || externalPort != apiExternalPort {
+		// the port matters only if it is non-standard
+		// for ssl or if not using ssl at all
+		buffer.WriteString(fmt.Sprintf(":%d", externalPort))
+	}
+	apiServerLink := buffer.String()
 
 	handlers := map[string]func(http.ResponseWriter, *http.Request){}
 
@@ -51,7 +79,7 @@ func main() {
 	// respond to contributor account creation requests
 	handlers["/register"] = func(w http.ResponseWriter, r *http.Request) {
 		register := func(w http.ResponseWriter, r *http.Request) string {
-			return api.RegisterAccount(r, coords, host, port)
+			return api.RegisterAccount(r, coords, apiServerLink)
 		}
 		api.Respond("application/json", "utf-8", register)(w, r)
 	}
