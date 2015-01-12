@@ -12,7 +12,7 @@
 case "$1" in
   start)
     echo "Starting APIServer"
-    /home/pod/server/APIServer
+    /home/pod/server/APIServer >> /home/pod/server/APIServer.log 2>&1
     ;;
   stop)
     echo "Stopping APIServer"
