@@ -1,6 +1,6 @@
 The server components run on a separate machine/network and support the functions of the Raspberry Pi scanner, particularly the barcode lookup.
 
-By default, the Pi client talks to the API service on the [saruzai.com](https://saruzai.com/) server, which runs a [MySQL](http://www.mysql.com/) database clone of the last available [Open Product Data](http://product.okfn.org/) (POD) data, along with [additional tables](database) for logging user contributions.
+By default, the Pi client talks to the API service on the [saruzai.com](http://saruzai.com/) server, which runs a [MySQL](http://www.mysql.com/) database clone of the last available [Open Product Data](http://product.okfn.org/) (POD) data, along with [additional tables](database) for logging user contributions.
 
 If you do not wish to participate in that project, you can build and run your own server instead, by following these instructions.
 
@@ -50,7 +50,7 @@ FLUSH PRIVILEGES;
 
 ## Server application installation
 
-*These steps are for the [saruzai.com](https://saruzai.com/) server; please change your domain or IP address accordingly.*
+*These steps are for the [saruzai.com](http://saruzai.com/) server; please change your domain or IP address accordingly.*
 
 1. Prepare the server environment
 
