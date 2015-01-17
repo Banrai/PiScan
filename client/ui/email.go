@@ -108,7 +108,7 @@ func EmailItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCo
 		return
 	}
 
-	// finally, return home, to the scanned items list
-	http.Redirect(w, r, "/", http.StatusFound)
+	// finally, return home, to the scanned items list with an ack message
+	http.Redirect(w, r, HOME_URL+"?ack=email", http.StatusFound)
 
 }

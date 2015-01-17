@@ -16,11 +16,18 @@ import (
 	"net/http"
 	"path"
 	"strconv"
+	"strings"
 )
 
 const (
+	// Errors
 	BAD_REQUEST = "Sorry, that is an invalid request"
 	BAD_POST    = "Sorry, we cannot respond to that request. Please try again."
+
+	// Info messages
+	EMAIL_SENT = "The selected items have been sent to your email address"
+
+	// urls
 	HOME_URL    = "/scanned/"
 	ACCOUNT_URL = "/account/"
 )
@@ -102,12 +109,13 @@ type Action struct {
 }
 
 type ItemsPage struct {
-	Title     string
-	ActiveTab *ActiveTab
-	Actions   []*Action
-	Items     []*database.Item
-	Account   *database.Account
-	Scanned   bool
+	Title       string
+	ActiveTab   *ActiveTab
+	Actions     []*Action
+	Items       []*database.Item
+	Account     *database.Account
+	Scanned     bool
+	PageMessage string
 }
 
 type ItemForm struct {
@@ -193,6 +201,15 @@ func getItems(w http.ResponseWriter, r *http.Request, dbCoords database.ConnCoor
 		Actions:   actions,
 		Account:   acc,
 		Items:     items}
+
+	// check for any message to display on page load
+	r.ParseForm()
+	if msg, exists := r.Form["ack"]; exists {
+		ackType := strings.Join(msg, "")
+		if ackType == "email" {
+			p.PageMessage = EMAIL_SENT
+		}
+	}
 
 	renderItemListTemplate(w, p)
 }

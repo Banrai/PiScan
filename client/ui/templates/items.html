@@ -6,6 +6,19 @@
 
    {{template "navigation_tabs.html" .ActiveTab}}
 
+   {{if .PageMessage}}
+   <div class="row">
+     <div class="col-xs-1 col-md-1"></div>
+     <div class="clearfix visible-xs-block"></div>
+     <div class="col-xs-10 col-md-10">
+       <div class="alert alert-info alert-dismissible" role="alert">
+	 <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	 <i class="fa fa-info-circle"></i> {{.PageMessage}}
+       </div>
+     </div>
+   </div>
+   {{end}}   
+   
    <!-- items (outer) -->
    <div class="row">
      <div class="col-xs-1 col-md-1"></div>
