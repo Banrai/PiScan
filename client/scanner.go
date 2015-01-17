@@ -94,10 +94,13 @@ func main() {
 			for i, product := range products {
 				v, exists := vendors[product.Vendor]
 				if !exists {
-					amazonId, amazonErr := database.AddVendor(db, product.Vendor, "Amazon")
-					if amazonErr == nil {
-						v = database.GetVendor(db, amazonId)
-						vendors[product.Vendor] = v
+					if len(product.Vendor) > 0 {
+						amazonId, amazonErr := database.AddVendor(db, product.Vendor, "Amazon")
+						if amazonErr == nil {
+							v = database.GetVendor(db, amazonId)
+							vendors[product.Vendor] = v
+							exists = true
+						}
 					}
 				}
 
@@ -112,7 +115,9 @@ func main() {
 					pk, insertErr := item.Add(db, acc)
 					if insertErr == nil {
 						// also log the vendor/product code combination
-						database.AddVendorProduct(db, product.SKU, v.Id, pk)
+						if exists {
+							database.AddVendorProduct(db, product.SKU, v.Id, pk)
+						}
 					}
 					productsFound += 1
 				}

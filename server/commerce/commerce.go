@@ -11,5 +11,5 @@ type API struct {
 	SKU         string `json:"sku"`
 	ProductName string `json:"desc,omitempty"`
 	ProductType string `json:"type,omitempty"`
-	Vendor      string `json:"vnd"`
+	Vendor      string `json:"vnd,omitempty"`
 }
