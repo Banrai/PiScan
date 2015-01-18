@@ -45,7 +45,17 @@
 	  <div class="col-xs-2 col-sm-1">{{if $item.Desc}}<input type="checkbox" class="chk_item" name="item" value="{{$item.Id}}" />{{else}}<a class="trash" href="#{{$item.Id}}"><i class="fa fa-trash-o"></i></a>{{end}}</div>
 	  <div class="col-xs-10 col-sm-7">
 	    <div class="product product-{{if $item.Desc}}found{{else}}unknown{{end}}">{{if $item.Desc}}{{$item.Desc}}{{else}}<i class="fa fa-exclamation-triangle"></i> NOT FOUND <a href="/input/{{$item.Id}}"><i class="fa fa-pencil"></i></a>{{end}}</div>
-	    <div class="barcode"><i class="fa fa-barcode"></i> {{$item.Barcode}}</div>
+	    <div class="barcode">
+	      {{if $item.ForSale}}
+	      <i class="fa fa-barcode"></i>
+	      {{else}}
+	      <span class="fa-stack">
+		<i class="fa fa-barcode fa-stack-1x"></i>
+		<i class="fa fa-ban fa-stack-2x text-danger"></i>
+	      </span>
+	      {{end}}
+	      {{$item.Barcode}}
+	    </div>
 	    <div class="timestamp">{{$item.Since}}</div>
 	    {{if $item.Desc}}
 	    {{range $pc := $item.ForSale}}
