@@ -1,6 +1,6 @@
 The client components can run on *any* computer, though this project was designed with the [Raspberry Pi](http://www.raspberrypi.org/) in mind, since it is compact, and efficient for a device mean to be mostly on all the time.
 
-The two binaries in this folder should be built and run, after connecting the barcode scanner usb device.
+The two binaries ([PiScanner](https://www.dropbox.com/s/bkum7scq29if0ld/PiScanner?dl=0) and [WebApp](https://www.dropbox.com/s/to4y63de0suq1cz/WebApp?dl=0)) should be downloaded or built, then run, after connecting the barcode scanner usb device.
 
 The client datastore is a simple [SQLite](http://sqlite.org/) database file, consisting of the [basic tables](database) needed to keep track of individual user scans, product data contributions, and favorited items.
 
@@ -213,11 +213,11 @@ pi@raspberrypi ~ $ sudo wicd-curses
 
 ## Installation
 
-Use either (a) the included ARM binaries; or (b) build them from source directly on the Pi.
+Use either (a) the ARM binaries; or (b) build them from source directly on the Pi.
 
 ### (a) Install the client binaries 
 
-  Copy the PiScanner and WebApp files and put them anywhere under the <tt>/home/pi</tt> folder.
+  Download the [PiScanner](https://www.dropbox.com/s/bkum7scq29if0ld/PiScanner?dl=0) and [WebApp](https://www.dropbox.com/s/to4y63de0suq1cz/WebApp?dl=0) files and put them anywhere under the <tt>/home/pi</tt> folder.
 
   The simplest way is to use the [scp command](http://linux.die.net/man/1/scp) like this (replace <tt>192.168.1.108</tt> with the actual IP address of your Pi on your network):
 
