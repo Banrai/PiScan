@@ -76,12 +76,13 @@ $ vi amazon_local_settings.py
 
   As [described here](commerce/amazon/amazon_settings.py), the <tt>amazon_local_settings.py</tt> file overrides the default (empty) settings for the access and secret keys.
 
-3. Copy the APIServer binary to the server
+3. Download the [APIServer](https://www.dropbox.com/s/gnwgmdsnrtmrmlu/APIServer?dl=0) binary to the server 
 
   ```sh
-cd binaries/linux/amd64
 scp APIServer pod@saruzai.com:/home/pod/server
   ```
+
+  *This link is a <tt>linux/amd64</tt> binary. If your server is different, you must build from source instead.*
 
 4. APIServer startup script
 
