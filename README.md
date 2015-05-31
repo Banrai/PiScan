@@ -2,7 +2,7 @@
 
 ## About
 
-This is a personal shopping and inventory-tracking device based on the [Raspberry Pi](http://www.raspberrypi.org/) and off-the-shelf [usb](https://en.wikipedia.org/wiki/USB) barcode scanners, with an option to share and contribute to the [Open Product Data](http://product.okfn.org/) (POD) database of product barcodes, as part of the [Saruzai Open Data](https://saruzai.com/) project.
+This is a personal shopping and inventory-tracking device based on the [Raspberry Pi](http://www.raspberrypi.org/) and off-the-shelf [usb](https://en.wikipedia.org/wiki/USB) barcode scanners, with an option to share and contribute to the [Open Product Data](http://product.okfn.org/) (POD) database of product barcodes, as part of the [Saruzai Open Data](http://saruzai.com/) project.
 
 ## Installation
 
