@@ -46,8 +46,6 @@ WITH GRANT OPTION;
 FLUSH PRIVILEGES;
   ```
 
-  *Note that while full POD database file (<tt>pod_web_2014.01.01_01.sql.gz</tt>) was available until recently at <tt>http://www.product-open-data.com/</tt> that site has gone dark suddenly, and it now points to a suspicious site with a bad certificate. If you want a copy of the original POD database without any user contributions from the Saruzai Open Data project, please [contact us](http://banrai.com/contact.html).*
-
 ## Server application installation
 
 *These steps are for the [saruzai.com](http://saruzai.com/) server; please change your domain or IP address accordingly.*

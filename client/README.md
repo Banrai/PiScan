@@ -222,7 +222,6 @@ Use either (a) the ARM binaries; or (b) build them from source directly on the P
   The simplest way is to use the [scp command](http://linux.die.net/man/1/scp) like this (replace <tt>192.168.1.108</tt> with the actual IP address of your Pi on your network):
 
   ```sh
-  cd binaries/linux/arm
   scp PiScanner pi@192.168.1.108:/home/pi
   scp WebApp pi@192.168.1.108:/home/pi
   ```

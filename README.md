@@ -20,7 +20,7 @@ Copy or download the pre-built ARM binaries onto your Raspberry Pi (runnning the
 
 ## Usage
 
-[screenshots + video]
+<blockquote class="imgur-embed-pub" lang="en" data-id="a/dXNYW"><p><a href="//imgur.com/a/dXNYW">PiScan Gallery on Imgur</a></p></blockquote>
 
 ### Acknowledgements
 
